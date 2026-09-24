@@ -1,0 +1,191 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="engineer (generated)" id="1788335485338-1">
+        <createSequence cacheSize="1" cycle="false" dataType="bigint" incrementBy="1" maxValue="9223372036854775807" minValue="1" sequenceName="seq_user" startValue="100"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-2">
+        <createTable tableName="sys_user">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="sys_user_pk"/>
+            </column>
+            <column name="username" remarks="usename for user identity" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" remarks="user password" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" remarks="user email" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column defaultValueBoolean="true" name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expiry_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="uuid" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-3">
+        <createTable tableName="sys_role">
+            <column autoIncrement="true" name="id" startWith="3" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="sys_role_pkey"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column defaultValueBoolean="true" name="active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="uuid" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-4">
+        <createTable tableName="sys_user_role">
+            <column autoIncrement="true" name="id" startWith="3" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="sys_user_role_pkey"/>
+            </column>
+            <column name="user_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="uuid" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-5">
+        <createTable tableName="sys_access">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="sys_access_pk"/>
+            </column>
+            <column name="uuid" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="name" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="path" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="method" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-6">
+        <createSequence cacheSize="1" cycle="false" dataType="bigint" incrementBy="1" maxValue="9223372036854775807" minValue="1" sequenceName="seq_access" startValue="1"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-7">
+        <createSequence cacheSize="1" cycle="false" dataType="bigint" incrementBy="1" maxValue="9223372036854775807" minValue="1" sequenceName="seq_role_access" startValue="1"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-8">
+        <createTable tableName="sys_role_access">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="sys_role_access_pk"/>
+            </column>
+            <column name="uuid" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="update" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sys_role_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sys_access_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-9">
+        <addUniqueConstraint columnNames="username" constraintName="sys_user_unique" tableName="sys_user"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-10">
+        <addUniqueConstraint columnNames="email" constraintName="sys_user_unique_email" tableName="sys_user"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-11">
+        <addUniqueConstraint columnNames="uuid" constraintName="sys_user_unique_uuid" tableName="sys_user"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-12">
+        <createIndex indexName="uq_sys_role_code" tableName="sys_role" unique="true" using="btree">
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-13">
+        <createIndex indexName="uq_sys_role_uuid" tableName="sys_role" unique="true" using="btree">
+            <column name="uuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-14">
+        <createIndex indexName="uq_sys_user_role_user_role" tableName="sys_user_role" unique="true" using="btree">
+            <column name="user_id"/>
+            <column name="role_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-15">
+        <createIndex indexName="uq_sys_user_role_uuid" tableName="sys_user_role" unique="true" using="btree">
+            <column name="uuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-16">
+        <createSequence cacheSize="1" cycle="false" dataType="integer" incrementBy="1" maxValue="2147483647" minValue="1" sequenceName="sys_access_id_seq" startValue="1"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-17">
+        <addUniqueConstraint columnNames="name" constraintName="sys_access_unique" tableName="sys_access"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-18">
+        <addUniqueConstraint columnNames="path" constraintName="sys_access_unique_1" tableName="sys_access"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-19">
+        <addUniqueConstraint columnNames="uuid" constraintName="sys_role_access_unique" tableName="sys_role_access"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-20">
+        <addUniqueConstraint columnNames="sys_role_id, sys_access_id" constraintName="sys_role_access_unique_access" tableName="sys_role_access"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-21">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="sys_user_role" constraintName="fk_sys_user_role_role" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="sys_role" validate="true"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-22">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="sys_user_role" constraintName="fk_sys_user_role_user" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="sys_user" validate="true"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-23">
+        <addForeignKeyConstraint baseColumnNames="sys_access_id" baseTableName="sys_role_access" constraintName="sys_role_access_sys_access_fk" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="sys_access" validate="true"/>
+    </changeSet>
+    <changeSet author="engineer (generated)" id="1788335485338-24">
+        <addForeignKeyConstraint baseColumnNames="sys_role_id" baseTableName="sys_role_access" constraintName="sys_role_access_sys_role_fk" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="sys_role" validate="true"/>
+    </changeSet>
+
+    <changeSet author="arif" id="202609071651-1">
+        <renameColumn tableName="sys_role_access" 
+                  oldColumnName="update" 
+                  newColumnName="updated" 
+                  columnDataType="TIMESTAMP WITHOUT TIME ZONE"/>
+    </changeSet>
+
+    <changeSet author="arif" id="202609141656-1">
+        <addColumn tableName="sys_user">
+            <column name="fullname" type="VARCHAR(150)"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>
