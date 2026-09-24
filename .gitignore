@@ -45,3 +45,52 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# =========================
+# Maven / Java build output
+# =========================
+
+/target/
+/.mvn/timing.properties
+*.class
+
+# =========================
+# IDE and editor files
+# =========================
+
+/.idea/
+*.iml
+*.iws
+*.ipr
+/.project
+/.classpath
+/.settings/
+/.vscode/
+
+# =========================
+# Local environment and secrets
+# =========================
+
+.env
+.env.*
+!.env.example
+application-local.properties
+application-local.yml
+application-*.local.properties
+application-*.local.yml
+
+# =========================
+# Logs and temporary files
+# =========================
+
+*.log
+*.tmp
+*.swp
+*.swo
+
+# =========================
+# Generated annotation sources
+# =========================
+
+/src/main/generated/
+/src/test/generated/
