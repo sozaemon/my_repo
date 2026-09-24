@@ -42,7 +42,7 @@ public class AccessServiceImpl implements AccessServiceDomain {
   @Override
   public List<AccessDto> getAccessByRolesAndPathAndMethod(List<String> roleName, String method) {
     log.info("get access by roles method: {}, roleNames : {}", method, roleName);
-    List<AccessModel> access = accessRepository.findAccessByRoleAndPath(method, roleName);
+    List<AccessModel> access = accessRepository.findAccessByRoleAndPath2(method, roleName);
     return access.stream().map(mapper::modelToDto).toList();
   }
 

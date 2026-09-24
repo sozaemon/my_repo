@@ -57,7 +57,15 @@ public class SpecificationBuilder<T> {
           break;
       }
     }
-    return this.specification;
+    if (this.specification == null) {
+      return null;
+    }
+
+    Specification<T> builtSpecification = this.specification;
+    return (root, query, builder) -> {
+      query.distinct(true);
+      return builtSpecification.toPredicate(root, query, builder);
+    };
   }
 
   private void applySpecification(Specification<T> spec, SpecificationFilter filter) {
