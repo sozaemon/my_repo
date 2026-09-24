@@ -1,10 +1,16 @@
 package com.arif.hrs.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
@@ -34,4 +40,7 @@ public class AccessModel extends BasicModel {
 
   @Column(name = "description")
   private String description;
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "access", cascade = CascadeType.ALL)
+  private Set<RoleAccessModel> roleAccess = new HashSet<>();
 }
