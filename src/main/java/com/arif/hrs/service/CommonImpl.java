@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.repository.specification.SpecificationBuilder;
@@ -37,6 +38,10 @@ public class CommonImpl {
     Sort sort = Sort.by(direction, field);
 
     return PageRequest.of(paginationRequest.getPage(), paginationRequest.getPageSize(), sort);
+  }
 
+  public static <T, R extends JpaSpecificationExecutor<T>> List<T> filterBySpecification(Specification<T> specification,
+      R repository) {
+    return repository.findAll(specification);
   }
 }

@@ -19,7 +19,9 @@ public interface RoleAccessMapper {
 
   @Mapping(source = "id", target = "id")
   @Mapping(source = "accessId", target = "access.id")
+  @Mapping(source = "accessName", target= "access.name")
   @Mapping(source = "roleId", target = "role.id")
+  @Mapping(source = "roleName", target = "role.name")
   public RoleAccessModel dtoToModel(RoleAccessDto dto);
 
   @Mapping(source = "id", target = "id")

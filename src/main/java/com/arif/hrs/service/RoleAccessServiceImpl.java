@@ -17,6 +17,7 @@ import com.arif.hrs.model.AccessModel;
 import com.arif.hrs.model.RoleAccessModel;
 import com.arif.hrs.model.RoleModel;
 import com.arif.hrs.repository.RoleAccessRepository;
+import com.arif.hrs.repository.specification.specifications.RoleAccessSpecification;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -93,6 +94,14 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
 
     return new PageDto<>(pageModel, dtoResult);
 
+  }
+
+  @Override
+  public List<RoleAccessDto> findByAccessId(Integer accessId) {
+    Specification<RoleAccessModel> specification = RoleAccessSpecification.filterRoleAccessByAccessId(accessId);
+    List<RoleAccessModel> roleAccessModels = CommonImpl.filterBySpecification(specification, roleAccessRepository);
+
+    return roleAccessModels.stream().map(mapper::modelToDto).toList();
   }
 
 }

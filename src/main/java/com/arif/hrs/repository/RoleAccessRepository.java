@@ -7,5 +7,4 @@ import com.arif.hrs.model.RoleAccessModel;
 
 public interface RoleAccessRepository
     extends JpaRepository<RoleAccessModel, Integer>, JpaSpecificationExecutor<RoleAccessModel> {
-
 }

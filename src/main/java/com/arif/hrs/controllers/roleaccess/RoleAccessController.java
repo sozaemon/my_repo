@@ -2,9 +2,12 @@ package com.arif.hrs.controllers.roleaccess;
 
 import java.util.List;
 
+import org.apache.catalina.connector.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +48,16 @@ public class RoleAccessController {
 
     return ResponseEntity.ok(
         new ResponseModel<PageResponse<?>>(response, "success to fetch role access"));
+  }
+
+  @GetMapping("/list/access/{accessId}")
+  public ResponseEntity<ResponseModel<?>> listRoleAccessByAccessId(@PathVariable("accessId") Integer accessId) {
+
+    List<RoleAccessDto> roleAccessDto = roleAccessService.findByAccessId(accessId);
+
+    List<RoleAccess> roleAccess = roleAccessDto.stream().map(mapper::dtoToHttp).toList();
+
+    return ResponseEntity.ok(new ResponseModel<List<RoleAccess>>(roleAccess, "success to fetch role access"));
   }
 
   @PostMapping("/create")

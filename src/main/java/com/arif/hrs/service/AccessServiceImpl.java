@@ -21,6 +21,7 @@ import com.arif.hrs.domain.service.AccessServiceDomain;
 import com.arif.hrs.mapper.AccessMapper;
 import com.arif.hrs.model.AccessModel;
 import com.arif.hrs.repository.AccessRepository;
+import com.arif.hrs.repository.specification.specifications.AccessSpecification;
 import com.arif.hrs.util.excel.ExcelGenerator;
 import com.arif.hrs.util.excel.excelmodel.AccessExcelModel;
 import com.arif.hrs.util.excel.service.ExcelBuilderXlsxService;
@@ -42,7 +43,9 @@ public class AccessServiceImpl implements AccessServiceDomain {
   @Override
   public List<AccessDto> getAccessByRolesAndPathAndMethod(List<String> roleName, String method) {
     log.info("get access by roles method: {}, roleNames : {}", method, roleName);
-    List<AccessModel> access = accessRepository.findAccessByRoleAndPath2(method, roleName);
+
+    Specification<AccessModel> specification = AccessSpecification.filterByRoleNameAndMethod(roleName, method);
+    List<AccessModel> access = CommonImpl.filterBySpecification(specification, accessRepository);
     return access.stream().map(mapper::modelToDto).toList();
   }
 
