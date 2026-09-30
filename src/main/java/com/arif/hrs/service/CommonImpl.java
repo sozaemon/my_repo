@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import com.arif.hrs.domain.dto.FilterDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.repository.specification.SpecificationBuilder;
 import com.arif.hrs.repository.specification.SpecificationFilter;
@@ -23,6 +24,20 @@ public class CommonImpl {
         .toList();
     SpecificationBuilder<T> builder = new SpecificationBuilder<>(filters);
 
+    return builder.buildSpecification();
+  }
+
+  public static <T> Specification<T> buildFilterSpecificationDto(List<FilterDto> filterDto) {
+    List<SpecificationFilter> filters = filterDto
+        .stream().map(m -> m.toSpecification())
+        .toList();
+    SpecificationBuilder<T> builder = new SpecificationBuilder<>(filters);
+
+    return builder.buildSpecification();
+  }
+
+  public static <T> Specification<T> buildFilterSpecification(List<SpecificationFilter> filters) {
+    SpecificationBuilder<T> builder = new SpecificationBuilder<>(filters);
     return builder.buildSpecification();
   }
 

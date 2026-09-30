@@ -6,6 +6,10 @@ import java.util.List;
 
 import org.springframework.data.jpa.domain.Specification;
 
+import io.micrometer.common.util.StringUtils;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+
 public class SpecificationBuilder<T> {
 
   private List<SpecificationFilter> filters = new ArrayList<>();
@@ -39,9 +43,6 @@ public class SpecificationBuilder<T> {
           break;
         case SpecificationEnum.LT:
           applySpecification(lowerThanSpecification(f), f);
-          break;
-        case SpecificationEnum.NOT:
-          applySpecification(notSpecification(f), f);
           break;
         case SpecificationEnum.NOTIN:
           applySpecification(notInSpecification(f), f);
@@ -83,16 +84,37 @@ public class SpecificationBuilder<T> {
   }
 
   public Specification<T> equalSpecification(SpecificationFilter f) {
-    return (root, query, builder) -> builder.equal(root.get(f.getFieldName()), f.getValue());
+    return (root, query, builder) -> {
+
+      if (!StringUtils.isEmpty(f.getJoinTable())) {
+        Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));
+        return builder.equal(join.get(f.getJoinField()), f.getValue());
+      }
+      return builder.equal(root.get(f.getFieldName()), f.getValue());
+    };
   }
 
   public Specification<T> notEqualSpecification(SpecificationFilter f) {
-    return (root, query, builder) -> builder.notEqual(root.get(f.getFieldName()), f.getValue());
+    return (root, query, builder) -> {
+
+      if (!StringUtils.isEmpty(f.getJoinTable())) {
+        Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));
+        return builder.notEqual(join.get(f.getJoinField()), f.getValue());
+      }
+      return builder.notEqual(root.get(f.getFieldName()), f.getValue());
+    };
   }
 
   public Specification<T> likeSpecification(SpecificationFilter f) {
-    return (root, query, builder) -> builder.like(builder.lower(root.get(f.getFieldName())),
-        "%" + String.valueOf(f.getValue()).toLowerCase() + "%");
+    return (root, query, builder) -> {
+
+      if (!StringUtils.isEmpty(f.getJoinTable())) {
+        Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));
+        return builder.like(join.get(f.getJoinField()), "%" + String.valueOf(f.getValue()).toLowerCase() + "%");
+      }
+      return builder.like(builder.lower(root.get(f.getFieldName())),
+          "%" + String.valueOf(f.getValue()).toLowerCase() + "%");
+    };
   }
 
   public Specification<T> greaterThanSpecification(SpecificationFilter f) {
@@ -141,10 +163,6 @@ public class SpecificationBuilder<T> {
     return null;
   }
 
-  public Specification<T> notSpecification(SpecificationFilter f) {
-    return (root, query, builder) -> builder.notEqual(root.get(f.getFieldName()), f.getValue());
-  }
-
   public Specification<T> notInSpecification(SpecificationFilter f) {
     return (root, query, builder) -> builder.not(root.get(f.getFieldName()).in(f.getValues()));
   }
@@ -154,6 +172,12 @@ public class SpecificationBuilder<T> {
   }
 
   public Specification<T> notNullSpecification(SpecificationFilter f) {
-    return (root, query, builder) -> builder.isNotNull(root.get(f.getFieldName()));
+    return (root, query, builder) -> {
+      if (!StringUtils.isEmpty(f.getJoinTable())) {
+        Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));
+        return builder.isNotNull(join.get(f.getJoinField()));
+      }
+      return builder.isNotNull(root.get(f.getFieldName()));
+    };
   }
 }

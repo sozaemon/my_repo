@@ -2,10 +2,10 @@ package com.arif.hrs.controllers.roleaccess;
 
 import java.util.List;
 
-import org.apache.catalina.connector.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,5 +68,12 @@ public class RoleAccessController {
     RoleAccessDto dto = roleAccessService.create(mapper.httpToDto(request));
     return ResponseEntity.ok(new ResponseModel<RoleAccess>(
         mapper.dtoToHttp(dto), "success to create role access"));
+  }
+
+  @DeleteMapping("/{roleAccessId}")
+  public ResponseEntity<ResponseModel<String>> deleteRoleAccess(@PathVariable("roleAccessId") Integer roleAccessId) {
+    roleAccessService.delete(roleAccessId);
+
+    return ResponseEntity.ok(new ResponseModel<String>("Success", "Role Access Deleted"));
   }
 }

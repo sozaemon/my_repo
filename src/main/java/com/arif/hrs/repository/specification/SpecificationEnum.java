@@ -6,7 +6,6 @@ public enum SpecificationEnum {
   LIKE,
   GT,
   LT,
-  NOT,
   NOTIN,
   IN,
   NOTNULL,
