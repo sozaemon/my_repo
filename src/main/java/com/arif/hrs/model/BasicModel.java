@@ -5,6 +5,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -25,18 +27,36 @@ public class BasicModel {
   @Column(name = "updated")
   private Timestamp updated;
 
+  @Column(name = "createdby")
+  private String createdBy;
+
+  @Column(name = "updatedBy")
+  private String updatedBy;
+
   @Column(name = "uuid")
   @UuidGenerator
   private UUID uuid;
 
   @PrePersist
   protected void onCreate() {
-    this.created = Timestamp.from(Instant.now());
-    this.updated = Timestamp.from(Instant.now());
+
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String userName = auth.getName();
+
+    setCreated(Timestamp.from(Instant.now()));
+    setUpdated(Timestamp.from(Instant.now()));
+    setCreatedBy(userName);
+    setUpdatedBy(userName);
+
   }
 
   @PreUpdate
   protected void onUpdated() {
-    this.updated = Timestamp.from(Instant.now());
+
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    String userName = auth.getName();
+
+    setUpdated(Timestamp.from(Instant.now()));
+    setUpdatedBy(userName);
   }
 }

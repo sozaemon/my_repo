@@ -1,0 +1,74 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+  <changeSet author="arif" id="202610021428-1">
+    <addColumn tableName="sys_user">
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedBy" type="VARCHAR(150)"/>
+    </addColumn>
+    <addColumn tableName="sys_role">
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedBy" type="VARCHAR(150)"/>
+    </addColumn>
+    <addColumn tableName="sys_access">
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedBy" type="VARCHAR(150)"/>
+    </addColumn>
+    <addColumn tableName="sys_role_access">
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedBy" type="VARCHAR(150)"/>
+    </addColumn>
+    <addColumn tableName="sys_user_role">
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedBy" type="VARCHAR(150)"/>
+    </addColumn>
+    <addColumn tableName="r_shift_type">
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedBy" type="VARCHAR(150)"/>
+    </addColumn>
+    <addColumn tableName="r_shift_tolerance">
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedBy" type="VARCHAR(150)"/>
+    </addColumn>
+    <addColumn tableName="t_shift">
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedBy" type="VARCHAR(150)"/>
+    </addColumn>
+  </changeSet>
+  <changeSet author="arif" id="202610021428-2">
+    <renameColumn tableName="sys_user" 
+                  oldColumnName="updatedBy" 
+                  newColumnName="updatedby" 
+                  columnDataType="VARCHAR(150)"/>
+    <renameColumn tableName="sys_role" 
+                  oldColumnName="updatedBy" 
+                  newColumnName="updatedby" 
+                  columnDataType="VARCHAR(150)"/>
+    <renameColumn tableName="sys_access" 
+                  oldColumnName="updatedBy" 
+                  newColumnName="updatedby" 
+                  columnDataType="VARCHAR(150)"/>
+    <renameColumn tableName="sys_role_access" 
+                  oldColumnName="updatedBy" 
+                  newColumnName="updatedby" 
+                  columnDataType="VARCHAR(150)"/>
+    <renameColumn tableName="sys_user_role" 
+                  oldColumnName="updatedBy" 
+                  newColumnName="updatedby" 
+                  columnDataType="VARCHAR(150)"/>
+    <renameColumn tableName="r_shift_type" 
+                  oldColumnName="updatedBy" 
+                  newColumnName="updatedby" 
+                  columnDataType="VARCHAR(150)"/>
+    <renameColumn tableName="r_shift_tolerance" 
+                  oldColumnName="updatedBy" 
+                  newColumnName="updatedby" 
+                  columnDataType="VARCHAR(150)"/>
+    <renameColumn tableName="t_shift" 
+                  oldColumnName="updatedBy" 
+                  newColumnName="updatedby" 
+                  columnDataType="VARCHAR(150)"/>  
+  </changeSet>
+</databaseChangeLog>

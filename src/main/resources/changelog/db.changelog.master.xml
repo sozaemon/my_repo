@@ -8,5 +8,5 @@
     <include file="changes/00000_initial.changelog.xml" relativeToChangelogFile="true"/>
     <include file="changes/202609021519_shift_type.xml" relativeToChangelogFile="true"/>
     <include file="changes/202609241714_user_role_access_seeder.xml" relativeToChangelogFile="true"/>
-
+    <include file="changes/202610021428_table_created_update.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

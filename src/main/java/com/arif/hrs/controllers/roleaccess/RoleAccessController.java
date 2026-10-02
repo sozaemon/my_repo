@@ -24,13 +24,13 @@ import com.arif.hrs.domain.service.RoleAccessServiceDomain;
 import com.arif.hrs.mapper.RoleAccessMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/role-access")
+@Slf4j
 public class RoleAccessController {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final RoleAccessServiceDomain roleAccessService;
   private final RoleAccessMapper mapper;
