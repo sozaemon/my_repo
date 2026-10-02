@@ -1,6 +1,7 @@
 package com.arif.hrs.auth.filter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -36,7 +37,13 @@ public class AuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getServletPath();
-    // Skip filtering for your public endpoints
+    // Skip filtering for your public
+
+    if (Arrays
+        .asList("/api-docs", "/swagger-ui/index.html")
+        .contains(path)) {
+      return true;
+    }
     return path.startsWith("/api/auth/") && !path.endsWith(AuthConstant.REFRESH_REQUEST);
   }
 

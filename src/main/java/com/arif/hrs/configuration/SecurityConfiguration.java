@@ -50,7 +50,8 @@ public class SecurityConfiguration {
         .cors(c -> c.configurationSource(corsConfigurationSource()))
         .sessionManagement(ses -> ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/login", "/api/auth/logout").permitAll()
+            .requestMatchers("/api/auth/login", "/api/auth/logout", "/api-docs", "/swagger-ui/index.html")
+            .permitAll()
             .anyRequest().access(authManager))
         .authenticationProvider(authenticationProvider())
         .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)

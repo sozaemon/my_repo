@@ -1,5 +1,6 @@
 package com.arif.hrs.auth.filter;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -45,10 +46,12 @@ public class DynamicAuthorizationManager implements AuthorizationManager<Request
     String method = request.getMethod();
 
     // skip validation on white listed request
-    if (requestUri.equals("/api/auth" + AuthConstant.REFRESH_REQUEST)){
+    if (Arrays
+        .asList("/api-docs", "/swagger-ui/index.html", "/api/auth" + AuthConstant.REFRESH_REQUEST)
+        .contains(requestUri)) {
       return new AuthorizationDecision(true);
     }
-    
+
     Authentication auth = authentication.get();
 
     if (auth == null || !auth.isAuthenticated()) {
