@@ -12,17 +12,33 @@ import jakarta.persistence.criteria.JoinType;
 
 public class SpecificationBuilder<T> {
 
-  private List<SpecificationFilter> filters = new ArrayList<>();
+  private List<SpecificationFilterWithJoin> filters = new ArrayList<>();
 
   Specification<T> specification = null;
 
-  public SpecificationBuilder(List<SpecificationFilter> filters) {
+  public SpecificationBuilder(List<SpecificationFilterWithJoin> filters) {
     this.filters = filters;
+  }
+
+  public SpecificationBuilder() {
+
+  }
+
+  public SpecificationBuilder<T> setFilter(List<SpecificationFilter> basicFilter) {
+    this.filters = basicFilter.stream().map(m -> {
+      return new SpecificationFilterWithJoin(
+          m.getFieldName(),
+          m.getValue(),
+          m.getOperator(),
+          m.getJoinFilter(),
+          m.getValues());
+    }).toList();
+    return this;
   }
 
   public Specification<T> buildSpecification() {
 
-    for (SpecificationFilter f : filters) {
+    for (SpecificationFilterWithJoin f : filters) {
 
       if (f == null || f.getFieldName() == null) {
         continue;
@@ -69,7 +85,7 @@ public class SpecificationBuilder<T> {
     };
   }
 
-  private void applySpecification(Specification<T> spec, SpecificationFilter filter) {
+  private void applySpecification(Specification<T> spec, SpecificationFilterWithJoin filter) {
     if (spec == null) {
       return;
     }
@@ -83,7 +99,7 @@ public class SpecificationBuilder<T> {
     }
   }
 
-  public Specification<T> equalSpecification(SpecificationFilter f) {
+  public Specification<T> equalSpecification(SpecificationFilterWithJoin f) {
     return (root, query, builder) -> {
 
       if (!StringUtils.isEmpty(f.getJoinTable())) {
@@ -94,7 +110,7 @@ public class SpecificationBuilder<T> {
     };
   }
 
-  public Specification<T> notEqualSpecification(SpecificationFilter f) {
+  public Specification<T> notEqualSpecification(SpecificationFilterWithJoin f) {
     return (root, query, builder) -> {
 
       if (!StringUtils.isEmpty(f.getJoinTable())) {
@@ -105,7 +121,7 @@ public class SpecificationBuilder<T> {
     };
   }
 
-  public Specification<T> likeSpecification(SpecificationFilter f) {
+  public Specification<T> likeSpecification(SpecificationFilterWithJoin f) {
     return (root, query, builder) -> {
 
       if (!StringUtils.isEmpty(f.getJoinTable())) {
@@ -171,7 +187,7 @@ public class SpecificationBuilder<T> {
     return (root, query, builder) -> root.get(f.getFieldName()).in(f.getValues());
   }
 
-  public Specification<T> notNullSpecification(SpecificationFilter f) {
+  public Specification<T> notNullSpecification(SpecificationFilterWithJoin f) {
     return (root, query, builder) -> {
       if (!StringUtils.isEmpty(f.getJoinTable())) {
         Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));

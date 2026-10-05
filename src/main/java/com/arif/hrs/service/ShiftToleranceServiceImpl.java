@@ -17,6 +17,7 @@ import com.arif.hrs.domain.service.ShiftToleranceServiceDomain;
 import com.arif.hrs.mapper.ShiftToleranceMapper;
 import com.arif.hrs.model.ShiftToleranceModel;
 import com.arif.hrs.repository.ShiftToleranceRepository;
+import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

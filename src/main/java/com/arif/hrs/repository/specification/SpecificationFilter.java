@@ -14,9 +14,6 @@ public class SpecificationFilter {
   private SpecificationEnum operator;
   private String joinFilter;
 
-  private String joinTable;
-  private String joinField;
-  private String joinType;
 
   public static final String JOIN_FILTER_OR = "OR";
   public static final String JOIN_FILTER_AND = "AND";
@@ -37,4 +34,5 @@ public class SpecificationFilter {
     this.operator = operator;
     this.joinFilter = joinFilter;
   }
+  
 }

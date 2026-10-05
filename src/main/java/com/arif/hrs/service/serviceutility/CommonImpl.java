@@ -1,4 +1,4 @@
-package com.arif.hrs.service;
+package com.arif.hrs.service.serviceutility;
 
 import java.util.List;
 
@@ -12,32 +12,30 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import com.arif.hrs.domain.dto.FilterDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.repository.specification.SpecificationBuilder;
-import com.arif.hrs.repository.specification.SpecificationFilter;
+import com.arif.hrs.repository.specification.SpecificationFilterWithJoin;
 
 public class CommonImpl {
   private CommonImpl() {
   }
 
   public static <T> Specification<T> buildPaginationSpecification(PaginationDto paginationRequest) {
-    List<SpecificationFilter> filters = paginationRequest.getFilters()
-        .stream().map(m -> m.toSpecification())
+    List<SpecificationFilterWithJoin> filters = paginationRequest.getFilters()
+        .stream().map(SpecificationFilterWithJoin::new)
         .toList();
     SpecificationBuilder<T> builder = new SpecificationBuilder<>(filters);
 
     return builder.buildSpecification();
   }
 
-  public static <T> Specification<T> buildFilterSpecificationDto(List<FilterDto> filterDto) {
-    List<SpecificationFilter> filters = filterDto
-        .stream().map(m -> m.toSpecification())
+  public static <T> Specification<T> buildFilterSpecificationDto(List<FilterDto> filterDto, Class<?> dtoClass) {
+    List<SpecificationFilterWithJoin> filters = filterDto
+        .stream().map(SpecificationFilterWithJoin::new)
         .toList();
-    SpecificationBuilder<T> builder = new SpecificationBuilder<>(filters);
 
-    return builder.buildSpecification();
-  }
+    FilterValidator filterValidator = new FilterValidator(filters, dtoClass);
 
-  public static <T> Specification<T> buildFilterSpecification(List<SpecificationFilter> filters) {
-    SpecificationBuilder<T> builder = new SpecificationBuilder<>(filters);
+    SpecificationBuilder<T> builder = new SpecificationBuilder<>(filterValidator.buildAndValidateFilters());
+
     return builder.buildSpecification();
   }
 

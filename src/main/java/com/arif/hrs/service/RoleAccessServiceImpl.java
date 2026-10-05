@@ -17,8 +17,8 @@ import com.arif.hrs.model.AccessModel;
 import com.arif.hrs.model.RoleAccessModel;
 import com.arif.hrs.model.RoleModel;
 import com.arif.hrs.repository.RoleAccessRepository;
-import com.arif.hrs.repository.specification.SpecificationFilter;
 import com.arif.hrs.repository.specification.specifications.RoleAccessSpecification;
+import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -87,24 +87,9 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
   @Override
   public PageDto<RoleAccessDto> paginate(PaginationDto paginationRequest) {
 
-    List<SpecificationFilter> filters = paginationRequest.getFilters().stream()
-        .map(m -> m.toSpecification())
-        .toList();
-
-    for (SpecificationFilter f : filters) {
-      if (f.getFieldName().equalsIgnoreCase("accessName")) {
-        f.setJoinTable("access");
-        f.setJoinField("name");
-        f.setJoinType("LEFT");
-      }
-
-      if (f.getFieldName().equalsIgnoreCase("roleName")) {
-        f.setJoinTable("role");
-        f.setJoinField("name");
-        f.setJoinType("LEFT");
-      }
-    }
-    Specification<RoleAccessModel> specification = CommonImpl.buildFilterSpecification(filters);
+    Specification<RoleAccessModel> specification = CommonImpl.buildFilterSpecificationDto(
+        paginationRequest.getFilters(),
+        RoleAccessDto.class);
     Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id");
 
     Page<RoleAccessModel> pageModel = roleAccessRepository.findAll(specification, page);

@@ -17,6 +17,7 @@ import com.arif.hrs.domain.service.ShiftTypeServiceDomain;
 import com.arif.hrs.mapper.ShiftTypeMapper;
 import com.arif.hrs.model.ShiftTypeModel;
 import com.arif.hrs.repository.ShiftTypeRepository;
+import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

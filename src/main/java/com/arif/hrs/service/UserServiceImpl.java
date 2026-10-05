@@ -34,9 +34,11 @@ public class UserServiceImpl implements UserServiceDomain {
     List<SpecificationFilter> filters = new ArrayList<>();
 
     filters
-        .add(new SpecificationFilter("userName", username, SpecificationEnum.EQ, SpecificationFilter.JOIN_FILTER_AND));
+        .add(new SpecificationFilter("userName", username, SpecificationEnum.EQ,
+            SpecificationFilter.JOIN_FILTER_AND));
 
-    SpecificationBuilder<UserModel> specificationBuilder = new SpecificationBuilder<UserModel>(filters);
+    SpecificationBuilder<UserModel> specificationBuilder = new SpecificationBuilder<UserModel>()
+        .setFilter(filters);
 
     Optional<UserModel> userModel = userRepository.findOne(specificationBuilder.buildSpecification());
 
@@ -52,9 +54,11 @@ public class UserServiceImpl implements UserServiceDomain {
     List<SpecificationFilter> filters = new ArrayList<>();
 
     filters
-        .add(new SpecificationFilter("userName", userName, SpecificationEnum.EQ, SpecificationFilter.JOIN_FILTER_AND));
+        .add(new SpecificationFilter("userName", userName, SpecificationEnum.EQ,
+            SpecificationFilter.JOIN_FILTER_AND));
 
-    SpecificationBuilder<UserModel> specificationBuilder = new SpecificationBuilder<UserModel>(filters);
+    SpecificationBuilder<UserModel> specificationBuilder = new SpecificationBuilder<UserModel>()
+        .setFilter(filters);
 
     Optional<UserModel> userModel = userRepository.findOne(specificationBuilder.buildSpecification());
 

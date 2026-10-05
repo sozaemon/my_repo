@@ -19,7 +19,7 @@ import com.arif.hrs.model.ShiftTypeModel;
 import com.arif.hrs.repository.ShiftRepository;
 import com.arif.hrs.repository.ShiftToleranceRepository;
 import com.arif.hrs.repository.ShiftTypeRepository;
-import com.arif.hrs.repository.specification.SpecificationFilter;
+import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -118,33 +118,8 @@ public class ShiftServiceImpl implements ShiftServiceDomain {
   public PageDto<ShiftDto> paginate(PaginationDto paginationRequest) {
     log.info("List Paginated Shift");
 
-    List<SpecificationFilter> filters = paginationRequest.getFilters().stream()
-        .map(m -> m.toSpecification()).toList();
-
-    for (SpecificationFilter f : filters) {
-
-      switch (f.getFieldName()) {
-        case "shiftTypeName":
-          f.setJoinTable("shiftType");
-          f.setJoinField("name");
-          f.setJoinType("LEFT");
-          break;
-        case "inToleranceName":
-          f.setJoinTable("inTolerance");
-          f.setJoinField("toleranceName");
-          f.setJoinType("LEFT");
-          break;
-        case "outToleranceName":
-          f.setJoinTable("outTolerance");
-          f.setJoinField("toleranceName");
-          f.setJoinType("LEFT");
-          break;
-        default:
-          break;
-      }
-    }
-
-    Specification<ShiftModel> specification = CommonImpl.buildFilterSpecification(filters);
+    Specification<ShiftModel> specification = CommonImpl.buildFilterSpecificationDto(
+        paginationRequest.getFilters(), ShiftDto.class);
     Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id");
 
     Page<ShiftModel> pageModel = shiftRepository.findAll(specification, page);

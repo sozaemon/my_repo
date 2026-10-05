@@ -15,6 +15,7 @@ import com.arif.hrs.domain.service.RoleServiceDomain;
 import com.arif.hrs.mapper.RoleMapper;
 import com.arif.hrs.model.RoleModel;
 import com.arif.hrs.repository.RoleRepository;
+import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

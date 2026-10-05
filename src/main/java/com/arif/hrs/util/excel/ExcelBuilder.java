@@ -2,20 +2,17 @@ package com.arif.hrs.util.excel;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -29,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.arif.hrs.util.excel.annotation.ExcelProperty;
-import com.arif.hrs.util.excel.exceptions.AnnotationNotFoundException;
 
 public abstract class ExcelBuilder<T> {
   protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -55,21 +51,15 @@ public abstract class ExcelBuilder<T> {
 
     try {
 
-      Map<String, ExcelProperty> property = extractExcelProperty();
+      List<FieldExcelProperty> property = extractFieldExcelProperty();
 
       this.sheet = createWorkSheet();
       createHeaderRow(property);
       createDataRows(property);
 
-      Set<?> entrySet = property.entrySet();
-
-      int c = 0;
-      for (@SuppressWarnings("unused")
-      Object o : entrySet) {
+      for (int c = 0; c < property.size(); c++) {
         sheet.autoSizeColumn(c);
-        c++;
       }
-
     } catch (Exception e) {
       log.error("fail to populate excel data", e);
     }
@@ -93,17 +83,18 @@ public abstract class ExcelBuilder<T> {
     return style;
   }
 
-  protected void createDataRows(Map<String, ExcelProperty> property) {
+  protected void createDataRows(List<FieldExcelProperty> property) {
     int rowCounter = this.startDataRow;
 
     Map<IndexedColors, CellStyle> styles = new EnumMap<>(IndexedColors.class);
 
     for (T d : dataSet) {
       Row dataRow = sheet.createRow(rowCounter);
-      property.forEach((k, v) -> {
+      property.forEach(p -> {
+        ExcelProperty v = p.property();
         Cell cell = dataRow.createCell(v.index());
         try {
-          PropertyDescriptor pd = new PropertyDescriptor(k, d.getClass());
+          PropertyDescriptor pd = new PropertyDescriptor(p.fieldName(), d.getClass());
           Method md = pd.getReadMethod();
           Object fieldValue = md.invoke(d);
 
@@ -151,7 +142,7 @@ public abstract class ExcelBuilder<T> {
     }
   }
 
-  protected void createHeaderRow(Map<String, ExcelProperty> property) {
+  protected void createHeaderRow(List<FieldExcelProperty> property) {
 
     CellStyle style = wb.createCellStyle();
     style.setBorderTop(BorderStyle.THIN);
@@ -161,9 +152,7 @@ public abstract class ExcelBuilder<T> {
     style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
     style.setFillForegroundColor(IndexedColors.WHITE.getIndex());
 
-    List<ExcelProperty> prop = new ArrayList<>();
-
-    property.forEach((k, v) -> prop.add(v));
+    List<ExcelProperty> prop = property.stream().map(m -> m.property()).toList();
 
     String[] headers = prop.stream()
         .sorted((a, b) -> Integer.compare(a.index(), b.index()))
@@ -180,21 +169,13 @@ public abstract class ExcelBuilder<T> {
     }
   }
 
-  private Map<String, ExcelProperty> extractExcelProperty()
-      throws AnnotationNotFoundException, SecurityException {
+  private List<FieldExcelProperty> extractFieldExcelProperty() {
 
-    log.info("extract excel property");
-    Map<String, ExcelProperty> result = new HashMap<>();
+    return Arrays.asList(this.clazz.getDeclaredFields()).stream()
+        .filter(f -> f.isAnnotationPresent(ExcelProperty.class))
+        .map(m -> new FieldExcelProperty(m.getName(), m.getAnnotation(ExcelProperty.class))).toList();
+  }
 
-    Field[] fields = clazz.getDeclaredFields();
-
-    for (Field f : fields) {
-      if (f.isAnnotationPresent(ExcelProperty.class)) {
-        result.put(f.getName(), f.getAnnotation(ExcelProperty.class));
-      } else {
-        throw new AnnotationNotFoundException(f.getName());
-      }
-    }
-    return result;
+  record FieldExcelProperty(String fieldName, ExcelProperty property) {
   }
 }
