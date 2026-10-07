@@ -2,8 +2,6 @@ package com.arif.hrs.controllers.roleaccess;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.arif.hrs.controllers.ResponseModel;
+import com.arif.hrs.controllers.httpmodel.AssignRoleAccessRequest;
 import com.arif.hrs.controllers.httpmodel.PageResponse;
 import com.arif.hrs.controllers.httpmodel.PaginationRequest;
 import com.arif.hrs.controllers.httpmodel.RoleAccess;
+import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.RoleAccessDto;
@@ -36,7 +36,7 @@ public class RoleAccessController {
   private final RoleAccessMapper mapper;
 
   @PostMapping("/list")
-  public ResponseEntity<ResponseModel<?>> listRoleAccess(
+  public ResponseEntity<ResponseModel<PageResponse<RoleAccess>>> listRoleAccess(
       @RequestBody PaginationRequest request) {
     log.info("list role access");
 
@@ -46,18 +46,18 @@ public class RoleAccessController {
         .map(mapper::dtoToHttp).toList();
     PageResponse<RoleAccess> response = new PageResponse<>(result, roleAccess);
 
-    return ResponseEntity.ok(
-        new ResponseModel<PageResponse<?>>(response, "success to fetch role access"));
+    return ControllerUtil.createSuccessResponse(response, "success to fetch role access");
   }
 
   @GetMapping("/list/access/{accessId}")
-  public ResponseEntity<ResponseModel<?>> listRoleAccessByAccessId(@PathVariable("accessId") Integer accessId) {
+  public ResponseEntity<ResponseModel<List<RoleAccess>>> listRoleAccessByAccessId(
+      @PathVariable("accessId") Integer accessId) {
 
     List<RoleAccessDto> roleAccessDto = roleAccessService.findByAccessId(accessId);
 
     List<RoleAccess> roleAccess = roleAccessDto.stream().map(mapper::dtoToHttp).toList();
 
-    return ResponseEntity.ok(new ResponseModel<List<RoleAccess>>(roleAccess, "success to fetch role access"));
+    return ControllerUtil.createSuccessResponse(roleAccess, "success to fetch role access");
   }
 
   @PostMapping("/create")
@@ -66,14 +66,25 @@ public class RoleAccessController {
     log.info("create role access");
 
     RoleAccessDto dto = roleAccessService.create(mapper.httpToDto(request));
-    return ResponseEntity.ok(new ResponseModel<RoleAccess>(
-        mapper.dtoToHttp(dto), "success to create role access"));
+
+    return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(dto), "success to create role access");
+
   }
 
-  @DeleteMapping("/{roleAccessId}")
+  @DeleteMapping("/delete/{roleAccessId}")
   public ResponseEntity<ResponseModel<String>> deleteRoleAccess(@PathVariable("roleAccessId") Integer roleAccessId) {
     roleAccessService.delete(roleAccessId);
 
-    return ResponseEntity.ok(new ResponseModel<String>("Success", "Role Access Deleted"));
+    return ControllerUtil.createSuccessResponse("Success", "success to assign roles access");
+  }
+
+  @PostMapping("/assign-roles")
+  public ResponseEntity<ResponseModel<List<RoleAccess>>> assignRoles(@RequestBody AssignRoleAccessRequest request) {
+    log.info("assign roles {} to access {}", request.getRoleIds(), request.getAccessId());
+
+    List<RoleAccessDto> roleAccess = roleAccessService.assignRolesToAccess(request.getRoleIds(), request.getAccessId());
+    List<RoleAccess> result = roleAccess.stream().map(mapper::dtoToHttp).toList();
+
+    return ControllerUtil.createSuccessResponse(result, "success to assign roles access");
   }
 }

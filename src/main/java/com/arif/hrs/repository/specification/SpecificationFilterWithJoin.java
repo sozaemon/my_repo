@@ -44,6 +44,9 @@ public class SpecificationFilterWithJoin extends SpecificationFilter {
     super(fieldName, value, operator, joinFilter);
   }
 
+  public SpecificationFilterWithJoin() {
+  }
+
   public SpecificationFilterWithJoin(
       String fieldName,
       List<Object> values,

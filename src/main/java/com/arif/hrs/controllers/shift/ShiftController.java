@@ -83,7 +83,7 @@ public class ShiftController {
     return ResponseEntity.ok(new ResponseModel<Shift>(result, "Success to fetch Shift"));
   }
 
-  @DeleteMapping("/{shiftId}")
+  @DeleteMapping("/delete/{shiftId}")
   public ResponseEntity<ResponseModel<?>> deleteShift(@PathVariable("shiftId") Integer shiftId) {
     log.info("Delete Shift {}", shiftId);
 

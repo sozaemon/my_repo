@@ -14,6 +14,7 @@ import com.arif.hrs.controllers.ResponseModel;
 import com.arif.hrs.controllers.httpmodel.PageResponse;
 import com.arif.hrs.controllers.httpmodel.PaginationRequest;
 import com.arif.hrs.controllers.httpmodel.ShiftTolerance;
+import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.ShiftToleranceDto;
@@ -37,8 +38,15 @@ public class ShiftToleranceController {
 
     ShiftToleranceDto dto = shiftToleranceService.create(mapper.httpToDto(request));
 
-    return ResponseEntity
-        .ok(new ResponseModel<ShiftTolerance>(mapper.dtoToHttp(dto), "success to create shift tolerance"));
+    return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(dto), "success to create shift tolerance");
+  }
+
+  @PostMapping("/update")
+  public ResponseEntity<ResponseModel<ShiftTolerance>> updateShiftTolerance(@RequestBody ShiftTolerance request){
+    log.info("update shift tolerance");
+
+    ShiftToleranceDto dto = shiftToleranceService.update(mapper.httpToDto(request));
+    return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(dto), "success update shift tolerance");
   }
 
   @PostMapping("/list")

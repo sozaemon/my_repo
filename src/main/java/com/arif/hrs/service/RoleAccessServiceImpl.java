@@ -1,5 +1,6 @@
 package com.arif.hrs.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -106,6 +107,39 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
     List<RoleAccessModel> roleAccessModels = CommonImpl.filterBySpecification(specification, roleAccessRepository);
 
     return roleAccessModels.stream().map(mapper::modelToDto).toList();
+  }
+
+  @Override
+  public List<RoleAccessDto> assignRolesToAccess(List<Integer> roleIds, Integer accessId) {
+
+    List<RoleAccessDto> createdRoles = new ArrayList<>();
+
+    Specification<RoleAccessModel> specification = RoleAccessSpecification.filterRoleAccessByAccessId(accessId);
+
+    List<RoleAccessModel> existingRoleAccess = roleAccessRepository.findAll(specification);
+
+    // delete not match role access
+    for (RoleAccessModel r : existingRoleAccess) {
+      if (!roleIds.contains(r.getRole().getId())) {
+        roleAccessRepository.delete(r);
+      }
+    }
+
+    // create not existing Role Access
+    List<Integer> currentRoleIds = existingRoleAccess.stream().map(m -> m.getRole().getId()).toList();
+    for (Integer r : roleIds) {
+      if (!currentRoleIds.contains(r)) {
+
+        RoleAccessDto dto = new RoleAccessDto();
+        dto.setRoleId(r);
+        dto.setAccessId(accessId);
+
+        RoleAccessModel createdRole = roleAccessRepository.save(mapper.dtoToModel(dto));
+        createdRoles.add(mapper.modelToDto(createdRole));
+      }
+    }
+
+    return createdRoles;
   }
 
 }

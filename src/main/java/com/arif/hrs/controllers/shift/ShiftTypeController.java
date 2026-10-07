@@ -5,7 +5,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +17,7 @@ import com.arif.hrs.controllers.ResponseModel;
 import com.arif.hrs.controllers.httpmodel.PageResponse;
 import com.arif.hrs.controllers.httpmodel.PaginationRequest;
 import com.arif.hrs.controllers.httpmodel.ShiftType;
+import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.ShiftTypeDto;
@@ -36,11 +40,12 @@ public class ShiftTypeController {
     log.info("create shift type");
 
     ShiftTypeDto dto = shiftTypeService.create(mapper.httpToDto(shiftType));
-    return ResponseEntity.ok(new ResponseModel<ShiftType>(mapper.dtoToHttp(dto), "success to create shift type"));
+
+    return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(dto), "success to create shift type");
   }
 
   @PostMapping("/list")
-  public ResponseEntity<ResponseModel<?>> listShiftType(@RequestBody PaginationRequest request) {
+  public ResponseEntity<ResponseModel<PageResponse<?>>> listShiftType(@RequestBody PaginationRequest request) {
     log.info("list shift type");
 
     PageDto<ShiftTypeDto> result = shiftTypeService.paginate(new PaginationDto(request));
@@ -48,7 +53,24 @@ public class ShiftTypeController {
     List<ShiftType> shiftType = result.getData().stream().map(mapper::dtoToHttp).toList();
     PageResponse<ShiftType> response = new PageResponse<>(result, shiftType);
 
-    return ResponseEntity.ok(new ResponseModel<PageResponse<?>>(response, "success to fetch shift types"));
+    return ControllerUtil.createSuccessResponse(response, "success to fetch shift type");
+  }
+
+  @PutMapping("/update")
+  public ResponseEntity<ResponseModel<ShiftType>> updateShiftType(@RequestBody ShiftType request){
+    log.info("update shift type");
+
+    ShiftTypeDto result = shiftTypeService.update(mapper.httpToDto(request));
+
+    return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(result), "success update shift type");
+  }
+
+  @DeleteMapping("/delete/{shiftTypeId}")
+  public ResponseEntity<ResponseModel<String>> deleteShiftType(@PathVariable("shiftTypeId")Integer shiftTypeId){
+    log.info("delete shift type");
+
+    shiftTypeService.delete(shiftTypeId);
+    return ControllerUtil.createSuccessResponse("deleted", "shift type deleted");
   }
 
 }

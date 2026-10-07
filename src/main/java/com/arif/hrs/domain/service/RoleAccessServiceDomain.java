@@ -6,4 +6,6 @@ import com.arif.hrs.domain.dto.RoleAccessDto;
 
 public interface RoleAccessServiceDomain extends CommonServiceDomain<RoleAccessDto, Integer> {
   public List<RoleAccessDto> findByAccessId(Integer accessId);
+
+  public List<RoleAccessDto> assignRolesToAccess(List<Integer> roleIds, Integer accessId);
 }
