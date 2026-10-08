@@ -4,6 +4,8 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd"
   >
+  <property name="uuid_type" value="uuid" dbms="postgresql"/>
+  <property name="uuid_function" value="gen_random_uuid()" dbms="postgresql"/>
   <changeSet id="202609241714-1" author="arif">
     <preConditions onFail="MARK_RAN">
       <sqlCheck expectedResult="0">
@@ -17,7 +19,7 @@
       <column name="active" value="true" />
       <column name="created" value="now()" />
       <column name="updated" value="now()" />
-      <column name="uuid" value="gen_random_uuid()" />
+      <column name="uuid" value="3c29ae9d-938d-468b-a073-d718447371cc" />
       <column name="fullname" value="ADMIN" />
     </insert>
   </changeSet>
@@ -33,7 +35,7 @@
       <column name="active" value="true" />
       <column name="created" value="now()" />
       <column name="updated" value="now()" />
-      <column name="uuid" value="gen_random_uuid()" />
+      <column name="uuid" value="1e30fbd7-6773-4b75-8186-92286215176d" />
     </insert>
   </changeSet>
   <changeSet id="202609241714-3" author="arif"><!-- insert sys_role-->
@@ -49,7 +51,7 @@
     </preConditions>
     <sql>
       INSERT INTO sys_user_role (user_id, role_id, created, updated, uuid)
-      SELECT u.id, r.id, now(), now(), gen_random_uuid()
+      SELECT u.id, r.id, now(), now(), '64f881e6-89ed-409c-a786-22a5add0c208'
       FROM sys_user u inner join sys_role r on r.code = 'ADMIN'
       WHERE u.username='admin'
     </sql>

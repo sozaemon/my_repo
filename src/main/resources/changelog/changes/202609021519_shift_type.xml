@@ -95,32 +95,32 @@
     <addUniqueConstraint columnNames="uuid" constraintName="t_shift_unique_uuid" tableName="t_shift"/>
   </changeSet>
   <changeSet author="arif" id="2026090215190-11">
-    <createIndex indexName="uq_r_shift_type_code" tableName="r_shift_type" unique="true" using="btree">
+    <createIndex indexName="uq_r_shift_type_code" tableName="r_shift_type" unique="true" >
       <column name="code"/>
     </createIndex>
   </changeSet>
   <changeSet author="arif" id="2026090215190-12">
-    <createIndex indexName="uq_r_shift_type_uuid" tableName="r_shift_type" unique="true" using="btree">
+    <createIndex indexName="uq_r_shift_type_uuid" tableName="r_shift_type" unique="true" >
         <column name="uuid"/>
     </createIndex>
   </changeSet>
   <changeSet author="arif" id="2026090215190-13">
-    <createIndex indexName="uq_r_shift_tolerance_code" tableName="r_shift_tolerance" unique="true" using="btree">
+    <createIndex indexName="uq_r_shift_tolerance_code" tableName="r_shift_tolerance" unique="true" >
       <column name="code"/>
     </createIndex>
   </changeSet>
   <changeSet author="arif" id="2026090215190-14">
-    <createIndex indexName="uq_r_shift_tolerance_uuid" tableName="r_shift_tolerance" unique="true" using="btree">
+    <createIndex indexName="uq_r_shift_tolerance_uuid" tableName="r_shift_tolerance" unique="true" >
         <column name="uuid"/>
     </createIndex>
   </changeSet>
   <changeSet author="arif" id="2026090215190-15">
-    <createIndex indexName="uq_t_shift_code" tableName="t_shift" unique="true" using="btree">
+    <createIndex indexName="uq_t_shift_code" tableName="t_shift" unique="true" >
       <column name="code"/>
     </createIndex>
   </changeSet>
   <changeSet author="arif" id="2026090215190-16">
-    <createIndex indexName="uq_t_shift_uuid" tableName="t_shift" unique="true" using="btree">
+    <createIndex indexName="uq_t_shift_uuid" tableName="t_shift" unique="true" >
         <column name="uuid"/>
     </createIndex>
   </changeSet>

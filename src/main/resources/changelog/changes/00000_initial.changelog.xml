@@ -128,23 +128,23 @@
         <addUniqueConstraint columnNames="uuid" constraintName="sys_user_unique_uuid" tableName="sys_user"/>
     </changeSet>
     <changeSet author="engineer (generated)" id="1788335485338-12">
-        <createIndex indexName="uq_sys_role_code" tableName="sys_role" unique="true" using="btree">
+        <createIndex indexName="uq_sys_role_code" tableName="sys_role" unique="true" >
             <column name="code"/>
         </createIndex>
     </changeSet>
     <changeSet author="engineer (generated)" id="1788335485338-13">
-        <createIndex indexName="uq_sys_role_uuid" tableName="sys_role" unique="true" using="btree">
+        <createIndex indexName="uq_sys_role_uuid" tableName="sys_role" unique="true" >
             <column name="uuid"/>
         </createIndex>
     </changeSet>
     <changeSet author="engineer (generated)" id="1788335485338-14">
-        <createIndex indexName="uq_sys_user_role_user_role" tableName="sys_user_role" unique="true" using="btree">
+        <createIndex indexName="uq_sys_user_role_user_role" tableName="sys_user_role" unique="true" >
             <column name="user_id"/>
             <column name="role_id"/>
         </createIndex>
     </changeSet>
     <changeSet author="engineer (generated)" id="1788335485338-15">
-        <createIndex indexName="uq_sys_user_role_uuid" tableName="sys_user_role" unique="true" using="btree">
+        <createIndex indexName="uq_sys_user_role_uuid" tableName="sys_user_role" unique="true" >
             <column name="uuid"/>
         </createIndex>
     </changeSet>

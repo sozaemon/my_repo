@@ -59,6 +59,7 @@ public class RoleServiceImpl implements RoleServiceDomain {
     RoleModel rModel = model.get();
     rModel.setName(v.getName());
     rModel.setDescription(v.getDescription());
+    rModel.setActive(v.getActive());
 
     rModel = roleRepository.save(rModel);
 

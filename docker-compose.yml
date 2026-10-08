@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # 1. Database Service
+  postgresdb:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # 2. Migration Service (Runs and Exits)
+  liquibase_migration:
+    image: liquibase/liquibase:4.29-alpine
+    container_name: liquibase_runner
+    volumes:
+      # Mounts your local changelogs folder to the Liquibase runtime folder
+      - ./src/main/resources/changelog:/liquibase/changelog
+    command: >
+      --url=jdbc:postgresql://postgresdb:5432/mydb
+      --username=myuser
+      --password=mypassword
+      --search-path=/liquibase/changelog 
+      --changelog-file=db.changelog.master.xml
+      update
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+
+  # 3. Application Service (Starts last)
+  springbootapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring_app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresdb:5432/mydb
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - SPRING_LIQUIBASE_ENABLED=false # Disables Spring Boot's internal runner
+    depends_on:
+      liquibase_migration:
+        condition: service_completed_successfully
+    restart: on-failure
+
+volumes:
+  pgdata:
