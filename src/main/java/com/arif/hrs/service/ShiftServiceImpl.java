@@ -70,7 +70,7 @@ public class ShiftServiceImpl implements ShiftServiceDomain {
       log.error("cannot find shift with id : {}", v.getId());
       throw new EntityNotFoundException("cannot find shift");
     }
-    Optional<ShiftTypeModel> shiftTypeModel = shiftTypeRepository.findById(v.getId());
+    Optional<ShiftTypeModel> shiftTypeModel = shiftTypeRepository.findById(v.getShiftTypeId());
     if (!shiftTypeModel.isPresent()) {
       log.error("cannot find shift type with id : {}", v.getShiftTypeId());
       throw new EntityNotFoundException("cannot find shift type");

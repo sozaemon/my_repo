@@ -41,7 +41,11 @@ public class BasicModel {
   protected void onCreate() {
 
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    String userName = auth.getName();
+
+    String userName = "";
+    if (auth != null) {
+      userName = auth.getName();
+    }
 
     setCreated(Timestamp.from(Instant.now()));
     setUpdated(Timestamp.from(Instant.now()));
@@ -54,7 +58,10 @@ public class BasicModel {
   protected void onUpdated() {
 
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    String userName = auth.getName();
+    String userName = "";
+    if (auth != null) {
+      userName = auth.getName();
+    }
 
     setUpdated(Timestamp.from(Instant.now()));
     setUpdatedBy(userName);
