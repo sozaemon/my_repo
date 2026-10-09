@@ -62,6 +62,20 @@ public class AccessRepositoryTest {
     assertEquals(1, result.size());
   }
 
+  @Test
+  void filterAccessUsingSpecificationBuildFromDTOWithOrJoinOperator() {
+    List<FilterDto> filterDTOs = Arrays.asList(new FilterDto[] {
+        filterDto("name", "1", new ArrayList<>(), "LIKE", "OR"),
+        filterDto("method", "DELETE", new ArrayList<>(), "EQ", "OR")
+    });
+
+    Specification<AccessModel> specification = CommonImpl.buildFilterSpecificationDto(filterDTOs, AccessDto.class);
+    List<AccessModel> result = accessRepository.findAll(specification);
+
+    assertNotNull(result);
+    assertEquals(2, result.size());
+  }
+
   private static AccessModel accessModel(
       String name,
       String method,
