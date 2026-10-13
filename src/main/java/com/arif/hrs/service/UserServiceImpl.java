@@ -1,11 +1,16 @@
 package com.arif.hrs.service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.arif.hrs.auth.model.AuthUser;
@@ -28,6 +33,7 @@ public class UserServiceImpl implements UserServiceDomain {
 
   private final UserRepository userRepository;
   private final UserMapper mapper;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -67,6 +73,22 @@ public class UserServiceImpl implements UserServiceDomain {
       result = mapper.modelToDto(userModel.get());
     }
     return Optional.ofNullable(result);
+  }
+
+  @Override
+  public UserDto createUser(UserDto userRequest, String plainPassword) {
+
+    UserModel model = mapper.dtoToModel(userRequest);
+
+    String encryptPassword = passwordEncoder.encode(plainPassword);
+    model.setPassword(encryptPassword);
+
+    Timestamp expiryDate = Timestamp.from(Instant.now().atZone(ZoneId.systemDefault()).plusMonths(3l).toInstant());
+    model.setExpiryDate(expiryDate);
+
+    model = userRepository.save(model);
+
+    return mapper.modelToDto(model);
   }
 
 }

@@ -8,4 +8,6 @@ import com.arif.hrs.domain.dto.UserDto;
 
 public interface UserServiceDomain extends UserDetailsService {
   public Optional<UserDto> findUserByUserName(String userName);
+
+  public UserDto createUser(UserDto userRequest, String plainPassword);
 }

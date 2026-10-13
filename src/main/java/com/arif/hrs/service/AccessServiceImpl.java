@@ -82,6 +82,7 @@ public class AccessServiceImpl implements AccessServiceDomain {
     AccessModel rModel = model.get();
     rModel.setMethod(v.getMethod());
     rModel.setName(v.getName());
+    rModel.setPath(v.getPath());
     rModel.setDescription(v.getDescription());
 
     rModel = accessRepository.save(rModel);

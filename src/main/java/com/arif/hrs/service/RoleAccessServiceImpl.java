@@ -91,7 +91,7 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
     Specification<RoleAccessModel> specification = CommonImpl.buildFilterSpecificationDto(
         paginationRequest.getFilters(),
         RoleAccessDto.class);
-    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id");
+    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id", RoleAccessDto.class);
 
     Page<RoleAccessModel> pageModel = roleAccessRepository.findAll(specification, page);
     List<RoleAccessDto> dtoResult = pageModel.getContent()

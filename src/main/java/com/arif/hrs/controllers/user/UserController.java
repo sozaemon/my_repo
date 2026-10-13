@@ -8,12 +8,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.arif.hrs.auth.model.AuthUser;
 import com.arif.hrs.controllers.ResponseModel;
 import com.arif.hrs.controllers.httpmodel.User;
+import com.arif.hrs.controllers.httpmodel.UserWithPassword;
+import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.UserDto;
 import com.arif.hrs.domain.service.UserServiceDomain;
 import com.arif.hrs.mapper.UserMapper;
@@ -43,5 +47,15 @@ public class UserController {
     }
 
     return ResponseEntity.ok(new ResponseModel<User>(mapper.dtoToHttp(getUser.get()), "success to fetch user"));
+  }
+
+  @PostMapping("/create")
+  public ResponseEntity<ResponseModel<User>> createUser(@RequestBody UserWithPassword userData) {
+
+    UserDto dto = mapper.httpToDto(userData);
+
+    UserDto result = userService.createUser(dto, userData.getPassword());
+
+    return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(result), "success to create user");
   }
 }

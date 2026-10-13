@@ -6,15 +6,22 @@ import java.util.List;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import io.micrometer.common.util.StringUtils;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
+import com.arif.hrs.service.serviceutility.FieldJoinMapping;
 
+import io.micrometer.common.util.StringUtils;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Root;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SpecificationBuilder<T> {
 
   private List<SpecificationFilterWithJoin> filters = new ArrayList<>();
 
   Specification<T> specification = null;
+
+  private List<FieldJoinMapping> joinMapping = new ArrayList<>();
 
   public SpecificationBuilder(List<SpecificationFilterWithJoin> filters) {
     this.filters = filters;
@@ -36,7 +43,14 @@ public class SpecificationBuilder<T> {
     return this;
   }
 
+  public SpecificationBuilder<T> setMapping(List<FieldJoinMapping> joinMapping) {
+    this.joinMapping = joinMapping;
+    return this;
+  }
+
   public Specification<T> buildSpecification() {
+
+    log.info("build specification");
 
     for (SpecificationFilterWithJoin f : filters) {
 
@@ -81,6 +95,16 @@ public class SpecificationBuilder<T> {
     Specification<T> builtSpecification = this.specification;
     return (root, query, builder) -> {
       query.distinct(true);
+
+      List<String> alreadyJoinedTable = new ArrayList<>();
+
+      for (FieldJoinMapping m : this.joinMapping) {
+        if (!alreadyJoinedTable.contains(m.joinTable())) {
+          root.fetch(m.joinTable(), JoinType.valueOf(m.joinType()));
+          alreadyJoinedTable.add(m.joinTable());
+        }
+      }
+
       return builtSpecification.toPredicate(root, query, builder);
     };
   }
@@ -101,99 +125,126 @@ public class SpecificationBuilder<T> {
 
   public Specification<T> equalSpecification(SpecificationFilterWithJoin f) {
     return (root, query, builder) -> {
-
-      if (!StringUtils.isEmpty(f.getJoinTable())) {
-        Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));
-        return builder.equal(join.get(f.getJoinField()), f.getValue());
-      }
-      return builder.equal(root.get(f.getFieldName()), f.getValue());
+      Expression<?> expression = createExpressions(root, f);
+      return builder.equal(expression, f.getValue());
     };
   }
 
   public Specification<T> notEqualSpecification(SpecificationFilterWithJoin f) {
     return (root, query, builder) -> {
-
-      if (!StringUtils.isEmpty(f.getJoinTable())) {
-        Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));
-        return builder.notEqual(join.get(f.getJoinField()), f.getValue());
-      }
-      return builder.notEqual(root.get(f.getFieldName()), f.getValue());
+      Expression<?> expression = createExpressions(root, f);
+      return builder.notEqual(expression, f.getValue());
     };
   }
 
   public Specification<T> likeSpecification(SpecificationFilterWithJoin f) {
     return (root, query, builder) -> {
-
-      if (!StringUtils.isEmpty(f.getJoinTable())) {
-        Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));
-        return builder.like(join.get(f.getJoinField()), "%" + String.valueOf(f.getValue()).toLowerCase() + "%");
-      }
-      return builder.like(builder.lower(root.get(f.getFieldName())),
+      Expression<?> expression = createExpressions(root, f);
+      return builder.like(builder.lower(expression.as(String.class)),
           "%" + String.valueOf(f.getValue()).toLowerCase() + "%");
     };
   }
 
-  public Specification<T> greaterThanSpecification(SpecificationFilter f) {
-    if (f.getValue() instanceof Double doubleValue) {
-      return (root, query, builder) -> builder.greaterThan(root.get(f.getFieldName()), doubleValue);
-    }
+  public Specification<T> greaterThanSpecification(SpecificationFilterWithJoin f) {
 
-    if (f.getValue() instanceof Integer intValue) {
-      return (root, query, builder) -> builder.greaterThan(root.get(f.getFieldName()), intValue);
-    }
+    return (root, query, builder) -> {
+      Expression<?> expression = createExpressions(root, f);
 
-    if (f.getValue() instanceof Timestamp timeValue) {
-      return (root, query, builder) -> builder.greaterThan(root.get(f.getFieldName()), timeValue);
-    }
-
-    return null;
-  }
-
-  public Specification<T> lowerThanSpecification(SpecificationFilter f) {
-    if (f.getValue() instanceof Double doubleValue) {
-      return (root, query, builder) -> builder.lessThan(root.get(f.getFieldName()), doubleValue);
-    }
-
-    if (f.getValue() instanceof Integer intValue) {
-      return (root, query, builder) -> builder.lessThan(root.get(f.getFieldName()), intValue);
-    }
-
-    if (f.getValue() instanceof Timestamp timeValue) {
-      return (root, query, builder) -> builder.lessThan(root.get(f.getFieldName()), timeValue);
-    }
-    return null;
-  }
-
-  public Specification<T> betweenSpecification(SpecificationFilter f) {
-    if (!f.getValues().isEmpty() && f.getValues().size() > 1) {
-      if (f.getValues().get(0) instanceof Double doubleValue1 && f.getValues().get(1) instanceof Double doubleValue2) {
-        return (root, query, builder) -> builder.between(root.get(f.getFieldName()), doubleValue1, doubleValue2);
-      } else if (f.getValues().get(0) instanceof Integer intValue1
-          && f.getValues().get(1) instanceof Integer intValue2) {
-        return (root, query, builder) -> builder.between(root.get(f.getFieldName()), intValue1, intValue2);
-      } else if (f.getValues().get(0) instanceof Timestamp timeValue1
-          && f.getValues().get(1) instanceof Timestamp timeValue2) {
-        return (root, query, builder) -> builder.between(root.get(f.getFieldName()), timeValue1, timeValue2);
+      switch (f.getValue()) {
+        case Double doubleValue:
+          return builder.greaterThan(expression.as(Double.class), doubleValue);
+        case Integer integerValue:
+          return builder.greaterThan(expression.as(Integer.class), integerValue);
+        case Timestamp timeValue:
+          return builder.greaterThan(expression.as(Timestamp.class), timeValue);
+        default:
+          break;
       }
+
+      return null;
+    };
+  }
+
+  public Specification<T> lowerThanSpecification(SpecificationFilterWithJoin f) {
+
+    return (root, query, builder) -> {
+      Expression<?> expression = createExpressions(root, f);
+
+      switch (f.getValue()) {
+        case Double doubleValue:
+          return builder.lessThan(expression.as(Double.class), doubleValue);
+        case Integer integerValue:
+          return builder.lessThan(expression.as(Integer.class), integerValue);
+        case Timestamp timeValue:
+          return builder.lessThan(expression.as(Timestamp.class), timeValue);
+        default:
+          break;
+      }
+
+      return null;
+    };
+
+  }
+
+  public Specification<T> betweenSpecification(SpecificationFilterWithJoin f) {
+
+    if (!f.getValues().isEmpty() && f.getValues().size() > 1) {
+
+      return (root, query, builder) -> {
+        Expression<?> expression = createExpressions(root, f);
+
+        if (f.getValues().get(0) instanceof Double double1 && f.getValues().get(1) instanceof Double double2) {
+          return builder.between(expression.as(Double.class), double1, double2);
+        }
+        if (f.getValues().get(0) instanceof Integer integer1 && f.getValues().get(1) instanceof Integer integer2) {
+          return builder.between(expression.as(Integer.class), integer1, integer2);
+        }
+        if (f.getValues().get(0) instanceof Timestamp timeValue1
+            && f.getValues().get(1) instanceof Timestamp timeValue2) {
+          return builder.between(expression.as(Timestamp.class), timeValue1, timeValue2);
+        }
+
+        return null;
+      };
     }
     return null;
   }
 
-  public Specification<T> notInSpecification(SpecificationFilter f) {
-    return (root, query, builder) -> builder.not(root.get(f.getFieldName()).in(f.getValues()));
+  public Specification<T> notInSpecification(SpecificationFilterWithJoin f) {
+    return (root, query, builder) -> {
+
+      Expression<?> expression = createExpressions(root, f);
+      return builder.not(expression.in(f.getValues()));
+    };
   }
 
-  public Specification<T> inSpecification(SpecificationFilter f) {
-    return (root, query, builder) -> root.get(f.getFieldName()).in(f.getValues());
+  public Specification<T> inSpecification(SpecificationFilterWithJoin f) {
+
+    return (root, query, builder) -> {
+
+      if (!StringUtils.isEmpty(f.getJoinTable())) {
+        return root.get(f.getJoinTable()).get(f.getJoinField()).in(f.getValues());
+      }
+      return root.get(f.getFieldName()).in(f.getValues());
+    };
   }
 
   public Specification<T> notNullSpecification(SpecificationFilterWithJoin f) {
     return (root, query, builder) -> {
-      if (!StringUtils.isEmpty(f.getJoinTable())) {
-        Join<?, ?> join = root.join(f.getJoinTable(), JoinType.valueOf(f.getJoinType()));
-        return builder.isNotNull(join.get(f.getJoinField()));
-      }
-      return builder.isNotNull(root.get(f.getFieldName()));
+      Expression<?> expression = createExpressions(root, f);
+      return builder.isNotNull(expression);
     };
+  }
+
+  private Expression<?> createExpressions(Root<T> root, SpecificationFilterWithJoin f) {
+    Expression<?> expression = null;
+
+    if (!StringUtils.isEmpty(f.getJoinTable())) {
+      expression = root.get(f.getJoinTable()).get(f.getJoinField());
+    } else {
+      expression = root.get(f.getFieldName());
+    }
+
+    return expression;
   }
 }

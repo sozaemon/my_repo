@@ -20,7 +20,8 @@ public class FilterValidator {
   private List<SpecificationFilterWithJoin> basicFilters = new ArrayList<>();
   private Class<?> clazz;
 
-  record FieldJoinMapping(String joinTable, String targetColumn, String joinType, String fieldName) {
+  public FilterValidator(Class<?> clazz) {
+    this.clazz = clazz;
   }
 
   public List<SpecificationFilterWithJoin> buildAndValidateFilters() {
@@ -29,7 +30,7 @@ public class FilterValidator {
 
     for (SpecificationFilterWithJoin f : basicFilters) {
 
-      Optional<FieldJoinMapping> mapping = mappingProperty.stream().filter(p -> p.fieldName.equals(f.getFieldName()))
+      Optional<FieldJoinMapping> mapping = mappingProperty.stream().filter(p -> p.fieldName().equals(f.getFieldName()))
           .findFirst();
 
       if (mapping.isPresent()) {
@@ -42,8 +43,12 @@ public class FilterValidator {
     return basicFilters;
   }
 
-  private List<FieldJoinMapping> extractMappingProperty() {
+  public List<FieldJoinMapping> extractMappingProperty() {
     List<FieldJoinMapping> result = new ArrayList<>();
+
+    if (this.clazz == null) {
+      return result;
+    }
 
     Field[] fields = this.clazz.getDeclaredFields();
 
@@ -58,10 +63,8 @@ public class FilterValidator {
               annotation.joinType().name(),
               f.getName()));
         }
-
       }
     }
-
     return result;
   }
 

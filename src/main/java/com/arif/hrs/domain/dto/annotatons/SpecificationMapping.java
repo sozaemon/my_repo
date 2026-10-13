@@ -13,6 +13,8 @@ public @interface SpecificationMapping {
 
   String targetColumn() default "";
 
+  String sortMapping() default "";
+
   enum JoinType {
     LEFT, RIGHT
   }
