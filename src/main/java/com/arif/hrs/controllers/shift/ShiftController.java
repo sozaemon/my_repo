@@ -23,17 +23,21 @@ import com.arif.hrs.domain.dto.ShiftDto;
 import com.arif.hrs.domain.service.ShiftServiceDomain;
 import com.arif.hrs.mapper.ShiftMapper;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/shift")
-@RequiredArgsConstructor
+
 public class ShiftController {
 
   private final ShiftServiceDomain shiftService;
   private final ShiftMapper mapper;
+
+  public ShiftController(ShiftServiceDomain shiftService, ShiftMapper mapper) {
+    this.shiftService = shiftService;
+    this.mapper = mapper;
+  }
 
   @PostMapping("/list")
   public ResponseEntity<ResponseModel<?>> listShift(

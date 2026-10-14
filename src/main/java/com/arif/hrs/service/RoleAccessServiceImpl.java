@@ -23,15 +23,20 @@ import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@RequiredArgsConstructor
+@Slf4j
 @Transactional(rollbackOn = Exception.class)
 public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
 
   private final RoleAccessRepository roleAccessRepository;
   private final RoleAccessMapper mapper;
+
+  public RoleAccessServiceImpl(RoleAccessRepository roleAccessRepository, RoleAccessMapper mapper) {
+    this.roleAccessRepository = roleAccessRepository;
+    this.mapper = mapper;
+  }
 
   @Override
   public Optional<RoleAccessDto> getOne(Integer id) {

@@ -1,9 +1,10 @@
 package com.arif.hrs.controllers.auth;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -23,50 +24,82 @@ import com.arif.hrs.auth.jwt.AuthJwtService;
 import com.arif.hrs.auth.model.AuthUser;
 import com.arif.hrs.controllers.ResponseModel;
 import com.arif.hrs.controllers.httpmodel.LoginRequest;
+import com.arif.hrs.controllers.httpmodel.Role;
 import com.arif.hrs.controllers.httpmodel.TokenResponse;
+import com.arif.hrs.domain.dto.RoleDto;
 import com.arif.hrs.domain.dto.UserDto;
-import com.arif.hrs.domain.service.UserServiceDomain;
+import com.arif.hrs.domain.service.RoleServiceDomain;
+import com.arif.hrs.domain.service.UserAuthServiceDomain;
+import com.arif.hrs.mapper.RoleMapper;
 import com.arif.hrs.util.cookie.CookieComponent;
 
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
-  private final Logger log = LoggerFactory.getLogger(getClass());
-
   private final AuthenticationManager authManager;
-  private final UserServiceDomain userService;
+  private final UserAuthServiceDomain userAuthService;
   private final AuthJwtService jwtService;
   private final CookieComponent cookieComponent;
+  private final RoleServiceDomain roleService;
+
+  private final RoleMapper roleMapper;
+
+  public AuthController(
+      AuthenticationManager authManager,
+      UserAuthServiceDomain userAuthService,
+      AuthJwtService jwtService,
+      CookieComponent cookieComponent,
+      RoleServiceDomain roleService,
+      RoleMapper roleMapper) {
+    this.authManager = authManager;
+    this.userAuthService = userAuthService;
+    this.jwtService = jwtService;
+    this.cookieComponent = cookieComponent;
+    this.roleService = roleService;
+    this.roleMapper = roleMapper;
+  }
 
   @PostMapping("/login")
   public ResponseEntity<ResponseModel<?>> createJwtToken(@RequestBody LoginRequest request,
       HttpServletResponse response) {
 
     log.info("AuthController {}", "create jwt token");
-    Authentication auth = authManager
-        .authenticate(new UsernamePasswordAuthenticationToken(request.getUserName(), request.getPassword()));
 
-    if (auth.isAuthenticated()) {
-      Optional<UserDto> user = userService.findUserByUserName(request.getUserName());
+    boolean isAuthenticated = authenticateLogin(request);
+    if (isAuthenticated) {
+      Optional<UserDto> user = userAuthService.findUserByUserName(request.getUserName());
 
       if (!user.isPresent()) {
-
         log.warn("user is not present {}", request.getUserName());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(new ResponseModel<String>(HttpStatus.UNAUTHORIZED.getReasonPhrase(), "user is not registered"));
+      }
+
+      // validate if role request match with user role
+      List<String> roles = userAuthService
+          .findUserRole(request.getUserName())
+          .stream()
+          .map(RoleDto::getCode).toList();
+
+      if (!roles.contains(String.valueOf(request.getRole()))) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new ResponseModel<String>(HttpStatus.UNAUTHORIZED.getReasonPhrase(), "role request is not matched"));
       }
 
       UserDto userDto = user.get();
 
       try {
 
-        final String token = jwtService.createJwtToken(userDto.getUserName(), userDto.getEmail());
-        final String refreshToken = jwtService.createRefreshToken(userDto.getUserName(), userDto.getEmail());
+        Map<String, Object> additionalClaims = new HashMap<>();
+        additionalClaims.put(AuthConstant.CLAIMS_ROLE, request.getRole());
+
+        final String token = jwtService.createJwtToken(userDto.getUserName(), additionalClaims);
+        final String refreshToken = jwtService.createRefreshToken(userDto.getUserName(), additionalClaims);
 
         ResponseCookie cookie = cookieComponent.setCookie(AuthConstant.JWT_KEY, token).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -92,7 +125,7 @@ public class AuthController {
   @PostMapping(AuthConstant.REFRESH_REQUEST)
   public ResponseEntity<ResponseModel<String>> refreshToken(HttpServletResponse response,
       @AuthenticationPrincipal AuthUser user) {
-    log.info("refresh token");
+    log.info("Auth Controller {}", "refresh token");
 
     if (user == null) {
       log.warn("fail to fetch principal");
@@ -102,7 +135,7 @@ public class AuthController {
 
     String userName = user.getUsername();
 
-    Optional<UserDto> userDto = userService.findUserByUserName(userName);
+    Optional<UserDto> userDto = userAuthService.findUserByUserName(userName);
 
     if (!userDto.isPresent()) {
       log.warn("user is not present {}", userName);
@@ -114,7 +147,14 @@ public class AuthController {
 
     try {
 
-      final String token = jwtService.createJwtToken(getUser.getUserName(), getUser.getEmail());
+      String userRole = user.getAuthorities().stream()
+          .map(m -> m.getAuthority()).findFirst().orElseGet(() -> "");
+
+      Map<String, Object> additionalClaims = new HashMap<>();
+      additionalClaims.put(AuthConstant.CLAIMS_ROLE, userRole);
+
+      final String token = jwtService.createJwtToken(getUser.getUserName(), additionalClaims);
+
       ResponseCookie cookie = cookieComponent.setCookie(AuthConstant.JWT_KEY, token).build();
       response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
@@ -128,9 +168,25 @@ public class AuthController {
 
   }
 
+  @PostMapping("/user-roles")
+  public ResponseEntity<ResponseModel<?>> authenticateLoginAndFetchRole(@RequestBody LoginRequest request) {
+    log.info("Auth Controller {}:{}", "POST", "fetch User Roles");
+    boolean isAuthenticated = authenticateLogin(request);
+
+    if (!isAuthenticated) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(new ResponseModel<String>(HttpStatus.UNAUTHORIZED.getReasonPhrase(), "login fail"));
+    }
+
+    List<RoleDto> roles = userAuthService.findUserRole(request.getUserName());
+    List<Role> response = roles.stream().map(roleMapper::dtoToHttp).toList();
+
+    return ResponseEntity.ok(new ResponseModel<List<Role>>(response, "success fetch user roles"));
+  }
+
   @PostMapping("/logout")
   public ResponseEntity<ResponseModel<String>> logOut(HttpServletResponse response) {
-    log.info("log out");
+    log.info("Auth Controller {}", "Log Out");
 
     ResponseCookie cookie = cookieComponent.setCookie(AuthConstant.JWT_KEY, null).clear();
     response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -142,10 +198,25 @@ public class AuthController {
   }
 
   @GetMapping("/user-roles")
-  public ResponseEntity<ResponseModel<String[]>> getUserRoles(@AuthenticationPrincipal AuthUser user) {
+  public ResponseEntity<ResponseModel<String>> getUserRoles(@AuthenticationPrincipal AuthUser user) {
+    log.info("Auth Controller {}:{}", "GET", "fetch User Roles");
+    String result = "";
+    Optional<String> userRole = user.getAuthorities().stream().map(m -> m.getAuthority()).findFirst();
 
-    String[] userRoles = user.getAuthorities().stream().map(m -> m.getAuthority()).toArray(String[]::new);
-    return ResponseEntity.ok(new ResponseModel<String[]>(userRoles, "success to fetch user roles"));
+    if (userRole.isPresent()) {
+      Optional<RoleDto> roleDto = roleService.findByCode(userRole.get());
+
+      if (roleDto.isPresent()) {
+        result = roleDto.get().getDescription();
+      }
+    }
+    return ResponseEntity.ok(new ResponseModel<String>(result, "success to fetch user roles"));
   }
 
+  private boolean authenticateLogin(LoginRequest login) {
+    Authentication auth = authManager
+        .authenticate(new UsernamePasswordAuthenticationToken(login.getUserName(), login.getPassword()));
+
+    return auth.isAuthenticated();
+  }
 }

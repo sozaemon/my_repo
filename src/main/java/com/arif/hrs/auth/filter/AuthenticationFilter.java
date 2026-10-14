@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -15,24 +16,29 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.arif.hrs.auth.constant.AuthConstant;
 import com.arif.hrs.auth.jwt.AuthJwtService;
-import com.arif.hrs.domain.service.UserServiceDomain;
+import com.arif.hrs.domain.service.UserAuthServiceDomain;
 import com.arif.hrs.util.cookie.CookieComponent;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
 @Component
-@RequiredArgsConstructor
 public class AuthenticationFilter extends OncePerRequestFilter {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final AuthJwtService jwtService;
-  private final UserServiceDomain userService;
+  private final UserAuthServiceDomain userAuthService;
   private final CookieComponent cookieComponent;
+
+  public AuthenticationFilter(AuthJwtService jwtService, UserAuthServiceDomain userAuthService,
+      CookieComponent cookieComponent) {
+    this.jwtService = jwtService;
+    this.userAuthService = userAuthService;
+    this.cookieComponent = cookieComponent;
+  }
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -40,11 +46,16 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     // Skip filtering for your public
 
     if (Arrays
-        .asList("/api-docs", "/swagger-ui/index.html")
+        .asList("/api/auth/login",
+            "/api/auth/logout",
+            "/api/auth/user-roles",
+            "/api-docs",
+            "/swagger-ui/index.html")
         .contains(path)) {
       return true;
     }
-    return path.startsWith("/api/auth/") && !path.endsWith(AuthConstant.REFRESH_REQUEST);
+
+    return false;
   }
 
   @Override
@@ -55,22 +66,28 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     String token = retrieveAuthenticationToken(request);
     String username = null;
+    String role = null;
 
     if (token != null) {
       try {
         username = jwtService.extractUserName(token);
+        role = (String) jwtService.extractAdditionalClaims(token, AuthConstant.CLAIMS_ROLE);
       } catch (Exception e) {
         log.error("fetch username from token fail", e);
       }
     }
 
     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-      UserDetails user = userService.loadUserByUsername(username);
+      UserDetails user = userAuthService.loadUserByUsername(username);
       Boolean tokenIsValid = jwtService.validateToken(token, user);
+
+      if (role == null) {
+        role = "UNKNOWN_ROLE";
+      }
 
       if (tokenIsValid.booleanValue()) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            user, null, user.getAuthorities());
+            user, null, Arrays.asList(new SimpleGrantedAuthority(role)));
         authToken.setDetails(
             new WebAuthenticationDetailsSource()
                 .buildDetails(request));

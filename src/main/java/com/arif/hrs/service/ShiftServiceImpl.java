@@ -23,12 +23,11 @@ import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional(rollbackOn = Exception.class)
-@RequiredArgsConstructor
+
 @Slf4j
 public class ShiftServiceImpl implements ShiftServiceDomain {
 
@@ -36,6 +35,14 @@ public class ShiftServiceImpl implements ShiftServiceDomain {
   private final ShiftTypeRepository shiftTypeRepository;
   private final ShiftToleranceRepository shiftToleranceRepository;
   private final ShiftMapper mapper;
+
+  public ShiftServiceImpl(ShiftRepository shiftRepository, ShiftTypeRepository shiftTypeRepository,
+      ShiftToleranceRepository shiftToleranceRepository, ShiftMapper mapper) {
+    this.shiftRepository = shiftRepository;
+    this.shiftTypeRepository = shiftTypeRepository;
+    this.shiftToleranceRepository = shiftToleranceRepository;
+    this.mapper = mapper;
+  }
 
   @Override
   public Optional<ShiftDto> getOne(Integer id) {
@@ -120,7 +127,7 @@ public class ShiftServiceImpl implements ShiftServiceDomain {
 
     Specification<ShiftModel> specification = CommonImpl.buildFilterSpecificationDto(
         paginationRequest.getFilters(), ShiftDto.class);
-    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id");
+    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id", ShiftDto.class);
 
     Page<ShiftModel> pageModel = shiftRepository.findAll(specification, page);
     List<ShiftDto> dtoResult = pageModel.getContent().stream().map(mapper::modelToDto).toList();

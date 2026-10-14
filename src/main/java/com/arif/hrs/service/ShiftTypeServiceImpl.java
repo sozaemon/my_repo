@@ -3,8 +3,6 @@ package com.arif.hrs.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,17 +19,20 @@ import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional(rollbackOn = Exception.class)
-@RequiredArgsConstructor
+@Slf4j
 public class ShiftTypeServiceImpl implements ShiftTypeServiceDomain {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final ShiftTypeRepository shiftTypeRepository;
   private final ShiftTypeMapper mapper;
+
+  public ShiftTypeServiceImpl(ShiftTypeRepository shiftTypeRepository, ShiftTypeMapper mapper) {
+    this.shiftTypeRepository = shiftTypeRepository;
+    this.mapper = mapper;
+  }
 
   @Override
   public Optional<ShiftTypeDto> getOne(Integer id) {
@@ -87,10 +88,11 @@ public class ShiftTypeServiceImpl implements ShiftTypeServiceDomain {
 
   @Override
   public PageDto<ShiftTypeDto> paginate(PaginationDto paginationRequest) {
-    log.info("delete shift type");
+    log.info("Paginate Shift Type");
 
-    Specification<ShiftTypeModel> specification = CommonImpl.buildPaginationSpecification(paginationRequest);
-    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id");
+    Specification<ShiftTypeModel> specification = CommonImpl.buildFilterSpecificationDto(paginationRequest.getFilters(),
+        ShiftTypeDto.class);
+    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id", ShiftTypeDto.class);
 
     Page<ShiftTypeModel> pageModel = shiftTypeRepository.findAll(specification, page);
     List<ShiftTypeDto> data = pageModel.getContent().stream().map(mapper::modelToDto).toList();

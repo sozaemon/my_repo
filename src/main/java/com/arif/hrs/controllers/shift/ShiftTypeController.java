@@ -24,16 +24,20 @@ import com.arif.hrs.domain.dto.ShiftTypeDto;
 import com.arif.hrs.domain.service.ShiftTypeServiceDomain;
 import com.arif.hrs.mapper.ShiftTypeMapper;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/shift/shift-type")
-@RequiredArgsConstructor
+@Slf4j
 public class ShiftTypeController {
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final ShiftTypeServiceDomain shiftTypeService;
   private final ShiftTypeMapper mapper;
+
+  public ShiftTypeController(ShiftTypeServiceDomain shiftTypeServiceDomain, ShiftTypeMapper mapper) {
+    this.shiftTypeService = shiftTypeServiceDomain;
+    this.mapper = mapper;
+  }
 
   @PostMapping("/create")
   public ResponseEntity<ResponseModel<ShiftType>> createShiftType(@RequestBody ShiftType shiftType) {
@@ -57,7 +61,7 @@ public class ShiftTypeController {
   }
 
   @PutMapping("/update")
-  public ResponseEntity<ResponseModel<ShiftType>> updateShiftType(@RequestBody ShiftType request){
+  public ResponseEntity<ResponseModel<ShiftType>> updateShiftType(@RequestBody ShiftType request) {
     log.info("update shift type");
 
     ShiftTypeDto result = shiftTypeService.update(mapper.httpToDto(request));
@@ -66,7 +70,7 @@ public class ShiftTypeController {
   }
 
   @DeleteMapping("/delete/{shiftTypeId}")
-  public ResponseEntity<ResponseModel<String>> deleteShiftType(@PathVariable("shiftTypeId")Integer shiftTypeId){
+  public ResponseEntity<ResponseModel<String>> deleteShiftType(@PathVariable("shiftTypeId") Integer shiftTypeId) {
     log.info("delete shift type");
 
     shiftTypeService.delete(shiftTypeId);

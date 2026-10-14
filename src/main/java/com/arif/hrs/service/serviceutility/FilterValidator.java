@@ -9,18 +9,21 @@ import com.arif.hrs.domain.dto.annotatons.SpecificationMapping;
 import com.arif.hrs.repository.specification.SpecificationFilterWithJoin;
 
 import io.micrometer.common.util.StringUtils;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 public class FilterValidator {
   private List<SpecificationFilterWithJoin> basicFilters = new ArrayList<>();
   private Class<?> clazz;
 
   public FilterValidator(Class<?> clazz) {
+    this.clazz = clazz;
+  }
+
+  public FilterValidator(List<SpecificationFilterWithJoin> filters, Class<?> clazz) {
+    this.basicFilters = filters;
     this.clazz = clazz;
   }
 

@@ -20,6 +20,7 @@ public class CommonImpl {
   private CommonImpl() {
   }
 
+  @Deprecated
   public static <T> Specification<T> buildPaginationSpecification(PaginationDto paginationRequest) {
     List<SpecificationFilterWithJoin> filters = paginationRequest.getFilters()
         .stream().map(SpecificationFilterWithJoin::new)
@@ -42,6 +43,7 @@ public class CommonImpl {
     return builder.buildSpecification();
   }
 
+  @Deprecated
   public static Pageable buildPaginationPage(PaginationDto paginationRequest, String defaultSort) {
     Sort.Direction direction = paginationRequest.getSortDirection() != null
         && paginationRequest.getSortDirection().equalsIgnoreCase("asc") ? Sort.Direction.ASC

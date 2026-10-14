@@ -17,6 +17,7 @@ import com.arif.hrs.auth.constant.AuthConstant;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -35,20 +36,24 @@ public class AuthJwtService {
   private Long refreshExpirationTime;
 
   public String createToken(Map<String, Object> additionalClaims, String username, Long expirationTime) {
-    return Jwts.builder()
-        .setClaims(additionalClaims)
+    JwtBuilder builder = Jwts.builder()
         .setSubject(username)
         .setIssuedAt(Date.from(Instant.now()))
         .setExpiration(Date.from(Instant.now().plusSeconds(expirationTime)))
-        .signWith(getSigninKey(), SignatureAlgorithm.HS256).compact();
+        .signWith(getSigninKey(), SignatureAlgorithm.HS256);
+
+    if (additionalClaims != null) {
+      builder.setClaims(additionalClaims);
+    }
+    return builder.compact();
   }
 
   private Long getExpirationTime() {
-    return expirationTime;
+    return this.expirationTime;
   }
 
   private Long getRefreshExpirationTime() {
-    return refreshExpirationTime;
+    return this.refreshExpirationTime;
   }
 
   private Key getSigninKey() {
@@ -93,20 +98,14 @@ public class AuthJwtService {
     return claimsResolver.apply(claims);
   }
 
-  public String createJwtToken(String username, String email) {
+  public String createJwtToken(String username, Map<String, Object> additionalClaims) {
     log.info("create jwt token");
-
-    Map<String, Object> additionalClaims = new HashMap<String, Object>();
-    additionalClaims.put(AuthConstant.CLAIMS_EMAIL, email);
 
     return createToken(additionalClaims, username, getExpirationTime());
   }
 
-  public String createRefreshToken(String userName, String email) {
+  public String createRefreshToken(String userName, Map<String, Object> additionalClaims) {
     log.info("create refresh token");
-
-    Map<String, Object> additionalClaims = new HashMap<String, Object>();
-    additionalClaims.put(AuthConstant.CLAIMS_EMAIL, email);
 
     return createToken(additionalClaims, userName, getRefreshExpirationTime());
   }

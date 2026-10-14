@@ -1,5 +1,6 @@
 package com.arif.hrs.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.arif.hrs.domain.dto.FilterDto;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.RoleDto;
@@ -19,15 +21,19 @@ import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional(rollbackOn = Exception.class)
-@RequiredArgsConstructor
+
 public class RoleServiceImpl implements RoleServiceDomain {
 
   private final RoleRepository roleRepository;
   private final RoleMapper mapper;
+
+  public RoleServiceImpl(RoleRepository roleRepository, RoleMapper mapper) {
+    this.roleRepository = roleRepository;
+    this.mapper = mapper;
+  }
 
   @Override
   public Optional<RoleDto> getOne(Integer id) {
@@ -79,13 +85,37 @@ public class RoleServiceImpl implements RoleServiceDomain {
 
   @Override
   public PageDto<RoleDto> paginate(PaginationDto paginationRequest) {
-    Specification<RoleModel> specification = CommonImpl.buildPaginationSpecification(paginationRequest);
-    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id");
+    Specification<RoleModel> specification = CommonImpl.buildFilterSpecificationDto(paginationRequest.getFilters(),
+        RoleDto.class);
+    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id", RoleDto.class);
 
     Page<RoleModel> pageModel = roleRepository.findAll(specification, page);
     List<RoleDto> data = pageModel.getContent().stream().map(mapper::modelToDto).toList();
 
     return new PageDto<>(pageModel, data);
+  }
+
+  @Override
+  public Optional<RoleDto> findByCode(String roleCode) {
+
+    FilterDto filter = new FilterDto();
+    filter.setFieldName("code");
+    filter.setValue(roleCode);
+    filter.setOperator("EQ");
+    filter.setJoinOperator("AND");
+    List<FilterDto> filters = Arrays.asList(filter);
+
+    Specification<RoleModel> specification = CommonImpl.buildFilterSpecificationDto(filters, RoleDto.class);
+
+    Optional<RoleModel> roleModel = roleRepository.findOne(specification);
+
+    RoleDto result = null;
+
+    if (roleModel.isPresent()) {
+      result = mapper.modelToDto(roleModel.get());
+    }
+
+    return Optional.ofNullable(result);
   }
 
 }

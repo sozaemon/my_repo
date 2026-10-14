@@ -36,7 +36,7 @@ class UserServiceTest {
   private UserMapper mapper;
 
   @InjectMocks
-  private UserServiceImpl userService;
+  private UserAuthServiceImpl userService;
 
   @Test
   void loadUserByUsernameReturnsUserDetailsWithUserRoles() {

@@ -21,16 +21,21 @@ import com.arif.hrs.domain.dto.ShiftToleranceDto;
 import com.arif.hrs.domain.service.ShiftToleranceServiceDomain;
 import com.arif.hrs.mapper.ShiftToleranceMapper;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/shift/shift-tolerance")
-@RequiredArgsConstructor
+@Slf4j
 public class ShiftToleranceController {
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final ShiftToleranceServiceDomain shiftToleranceService;
   private final ShiftToleranceMapper mapper;
+
+  public ShiftToleranceController(ShiftToleranceServiceDomain shiftToleranceServiceDomain,
+      ShiftToleranceMapper mapper) {
+    this.shiftToleranceService = shiftToleranceServiceDomain;
+    this.mapper = mapper;
+  }
 
   @PostMapping("/create")
   public ResponseEntity<ResponseModel<ShiftTolerance>> createShiftTolerance(@RequestBody ShiftTolerance request) {
@@ -42,7 +47,7 @@ public class ShiftToleranceController {
   }
 
   @PostMapping("/update")
-  public ResponseEntity<ResponseModel<ShiftTolerance>> updateShiftTolerance(@RequestBody ShiftTolerance request){
+  public ResponseEntity<ResponseModel<ShiftTolerance>> updateShiftTolerance(@RequestBody ShiftTolerance request) {
     log.info("update shift tolerance");
 
     ShiftToleranceDto dto = shiftToleranceService.update(mapper.httpToDto(request));

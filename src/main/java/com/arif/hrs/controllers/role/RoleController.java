@@ -24,10 +24,7 @@ import com.arif.hrs.domain.dto.RoleDto;
 import com.arif.hrs.domain.service.RoleServiceDomain;
 import com.arif.hrs.mapper.RoleMapper;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/role")
 public class RoleController {
 
@@ -35,6 +32,11 @@ public class RoleController {
 
   private final RoleServiceDomain roleService;
   private final RoleMapper mapper;
+
+  public RoleController(RoleServiceDomain roleService, RoleMapper mapper) {
+    this.roleService = roleService;
+    this.mapper = mapper;
+  }
 
   @PostMapping("/list")
   public ResponseEntity<ResponseModel<PageResponse<Role>>> listRole(

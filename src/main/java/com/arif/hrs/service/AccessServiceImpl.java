@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,17 +27,20 @@ import com.arif.hrs.util.excel.service.ExcelBuilderXlsxService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @Transactional(rollbackOn = Exception.class)
-@RequiredArgsConstructor
 public class AccessServiceImpl implements AccessServiceDomain {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final AccessRepository accessRepository;
   private final AccessMapper mapper;
+
+  public AccessServiceImpl(AccessRepository accessRepository, AccessMapper mapper) {
+    this.accessRepository = accessRepository;
+    this.mapper = mapper;
+  }
 
   @Override
   public List<AccessDto> getAccessByRolesAndPathAndMethod(List<String> roleName, String method) {
@@ -105,8 +106,9 @@ public class AccessServiceImpl implements AccessServiceDomain {
   @Override
   public PageDto<AccessDto> paginate(PaginationDto paginationRequest) {
 
-    Specification<AccessModel> specification = CommonImpl.buildPaginationSpecification(paginationRequest);
-    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id");
+    Specification<AccessModel> specification = CommonImpl.buildFilterSpecificationDto(paginationRequest.getFilters(),
+        AccessDto.class);
+    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id", AccessDto.class);
 
     Page<AccessModel> pageModel = accessRepository.findAll(specification, page);
     List<AccessDto> dtoResult = pageModel.getContent().stream().map(mapper::modelToDto).toList();

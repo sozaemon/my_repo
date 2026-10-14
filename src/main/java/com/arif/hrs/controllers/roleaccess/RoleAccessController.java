@@ -23,17 +23,20 @@ import com.arif.hrs.domain.dto.RoleAccessDto;
 import com.arif.hrs.domain.service.RoleAccessServiceDomain;
 import com.arif.hrs.mapper.RoleAccessMapper;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/role-access")
 @Slf4j
 public class RoleAccessController {
 
   private final RoleAccessServiceDomain roleAccessService;
   private final RoleAccessMapper mapper;
+
+  public RoleAccessController(RoleAccessServiceDomain roleAccessService, RoleAccessMapper mapper) {
+    this.roleAccessService = roleAccessService;
+    this.mapper = mapper;
+  }
 
   @PostMapping("/list")
   public ResponseEntity<ResponseModel<PageResponse<RoleAccess>>> listRoleAccess(

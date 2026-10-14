@@ -26,17 +26,17 @@ import com.arif.hrs.auth.filter.AuthenticationFilter;
 import com.arif.hrs.auth.filter.DynamicAuthorizationManager;
 import com.arif.hrs.auth.handler.AuthenticationFailHandler;
 import com.arif.hrs.auth.handler.NoAccessHandler;
-import com.arif.hrs.domain.service.UserServiceDomain;
+import com.arif.hrs.domain.service.UserAuthServiceDomain;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
+@Slf4j
 public class SecurityConfiguration {
 
   private final AuthenticationFilter authenticationFilter;
-  private final UserServiceDomain userService;
+  private final UserAuthServiceDomain userAuthService;
   private final DynamicAuthorizationManager authManager;
   private final NoAccessHandler noAccessHandler;
   private final AuthenticationFailHandler authFailHandler;
@@ -44,13 +44,28 @@ public class SecurityConfiguration {
   @Value("${app.allowed.cors}")
   private String[] allowedCors;
 
+  public SecurityConfiguration(AuthenticationFilter authenticationFilter,
+      UserAuthServiceDomain userAuthServiceDomain, DynamicAuthorizationManager authManager,
+      NoAccessHandler noAccessHandler, AuthenticationFailHandler authenticationFailHandler) {
+    this.authenticationFilter = authenticationFilter;
+    this.userAuthService = userAuthServiceDomain;
+    this.authManager = authManager;
+    this.noAccessHandler = noAccessHandler;
+    this.authFailHandler = authenticationFailHandler;
+  }
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) {
     http.csrf(c -> c.disable())
         .cors(c -> c.configurationSource(corsConfigurationSource()))
         .sessionManagement(ses -> ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/login", "/api/auth/logout", "/api-docs", "/swagger-ui/index.html")
+            .requestMatchers(
+                "/api/auth/login",
+                "/api/auth/logout",
+                "/api/auth/user-roles",
+                "/api-docs",
+                "/swagger-ui/index.html")
             .permitAll()
             .anyRequest().access(authManager))
         .authenticationProvider(authenticationProvider())
@@ -83,7 +98,7 @@ public class SecurityConfiguration {
 
   @Bean
   public AuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider pr = new DaoAuthenticationProvider(userService);
+    DaoAuthenticationProvider pr = new DaoAuthenticationProvider(userAuthService);
     pr.setPasswordEncoder(passwordEncoder());
     return pr;
   }

@@ -9,6 +9,7 @@ public class AuthConstant {
 
   // JWT Additional Claims
   public static final String CLAIMS_EMAIL = "claims_email";
+  public static final String CLAIMS_ROLE = "claims_role";
 
   public static final String JWT_KEY = "hrs-jwt-authentication-key";
   public static final String JWT_KEY_REFRESH = "hrs-jwt-authentication-key-refresh";

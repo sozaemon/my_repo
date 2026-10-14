@@ -3,8 +3,6 @@ package com.arif.hrs.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,17 +19,20 @@ import com.arif.hrs.service.serviceutility.CommonImpl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional(rollbackOn = Exception.class)
-@RequiredArgsConstructor
+@Slf4j
 public class ShiftToleranceServiceImpl implements ShiftToleranceServiceDomain {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final ShiftToleranceRepository shiftToleranceRepository;
   private final ShiftToleranceMapper mapper;
+
+  public ShiftToleranceServiceImpl(ShiftToleranceRepository shiftToleranceRepository, ShiftToleranceMapper mapper) {
+    this.shiftToleranceRepository = shiftToleranceRepository;
+    this.mapper = mapper;
+  }
 
   @Override
   public Optional<ShiftToleranceDto> getOne(Integer id) {
@@ -91,8 +92,9 @@ public class ShiftToleranceServiceImpl implements ShiftToleranceServiceDomain {
   public PageDto<ShiftToleranceDto> paginate(PaginationDto paginationRequest) {
     log.info("paginated list shift tolerance");
 
-    Specification<ShiftToleranceModel> specification = CommonImpl.buildPaginationSpecification(paginationRequest);
-    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id");
+    Specification<ShiftToleranceModel> specification = CommonImpl
+        .buildFilterSpecificationDto(paginationRequest.getFilters(), ShiftToleranceDto.class);
+    Pageable page = CommonImpl.buildPaginationPage(paginationRequest, "id", ShiftToleranceDto.class);
 
     Page<ShiftToleranceModel> pageModel = shiftToleranceRepository.findAll(specification, page);
     List<ShiftToleranceDto> data = pageModel.getContent().stream().map(mapper::modelToDto).toList();
