@@ -96,11 +96,11 @@ public class RoleServiceImpl implements RoleServiceDomain {
   }
 
   @Override
-  public Optional<RoleDto> findByCode(String roleCode) {
+  public Optional<RoleDto> findByName(String roleName) {
 
     FilterDto filter = new FilterDto();
-    filter.setFieldName("code");
-    filter.setValue(roleCode);
+    filter.setFieldName("name");
+    filter.setValue(roleName);
     filter.setOperator("EQ");
     filter.setJoinOperator("AND");
     List<FilterDto> filters = Arrays.asList(filter);

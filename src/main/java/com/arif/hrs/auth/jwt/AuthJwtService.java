@@ -36,15 +36,16 @@ public class AuthJwtService {
   private Long refreshExpirationTime;
 
   public String createToken(Map<String, Object> additionalClaims, String username, Long expirationTime) {
+
+    if (additionalClaims == null){
+      additionalClaims = new HashMap<>();
+    }
     JwtBuilder builder = Jwts.builder()
         .setSubject(username)
+        .setClaims(additionalClaims)
         .setIssuedAt(Date.from(Instant.now()))
         .setExpiration(Date.from(Instant.now().plusSeconds(expirationTime)))
         .signWith(getSigninKey(), SignatureAlgorithm.HS256);
-
-    if (additionalClaims != null) {
-      builder.setClaims(additionalClaims);
-    }
     return builder.compact();
   }
 
@@ -62,7 +63,13 @@ public class AuthJwtService {
   }
 
   public String extractUserName(String token) {
-    return claims(token, Claims::getSubject);
+    String userName= claims(token, Claims::getSubject);
+
+    if(userName == null){
+      userName = String.valueOf(this.extractAdditionalClaims(token, AuthConstant.CLAIMS_USERNAME));
+    }
+
+    return userName;
   }
 
   public Object extractAdditionalClaims(String token, String key) {
@@ -94,7 +101,7 @@ public class AuthJwtService {
         .build()
         .parseClaimsJws(token)
         .getBody();
-
+    
     return claimsResolver.apply(claims);
   }
 

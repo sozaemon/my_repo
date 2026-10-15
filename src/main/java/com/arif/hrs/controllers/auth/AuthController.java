@@ -45,7 +45,7 @@ public class AuthController {
   private final UserAuthServiceDomain userAuthService;
   private final AuthJwtService jwtService;
   private final CookieComponent cookieComponent;
-  private final RoleServiceDomain roleService;
+ 
 
   private final RoleMapper roleMapper;
 
@@ -54,13 +54,11 @@ public class AuthController {
       UserAuthServiceDomain userAuthService,
       AuthJwtService jwtService,
       CookieComponent cookieComponent,
-      RoleServiceDomain roleService,
       RoleMapper roleMapper) {
     this.authManager = authManager;
     this.userAuthService = userAuthService;
     this.jwtService = jwtService;
     this.cookieComponent = cookieComponent;
-    this.roleService = roleService;
     this.roleMapper = roleMapper;
   }
 
@@ -84,7 +82,7 @@ public class AuthController {
       List<String> roles = userAuthService
           .findUserRole(request.getUserName())
           .stream()
-          .map(RoleDto::getCode).toList();
+          .map(RoleDto::getName).toList();
 
       if (!roles.contains(String.valueOf(request.getRole()))) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -92,11 +90,11 @@ public class AuthController {
       }
 
       UserDto userDto = user.get();
-
       try {
 
         Map<String, Object> additionalClaims = new HashMap<>();
         additionalClaims.put(AuthConstant.CLAIMS_ROLE, request.getRole());
+        additionalClaims.put(AuthConstant.CLAIMS_USERNAME, userDto.getUserName());
 
         final String token = jwtService.createJwtToken(userDto.getUserName(), additionalClaims);
         final String refreshToken = jwtService.createRefreshToken(userDto.getUserName(), additionalClaims);
@@ -152,6 +150,7 @@ public class AuthController {
 
       Map<String, Object> additionalClaims = new HashMap<>();
       additionalClaims.put(AuthConstant.CLAIMS_ROLE, userRole);
+      additionalClaims.put(AuthConstant.CLAIMS_USERNAME, getUser.getUserName());
 
       final String token = jwtService.createJwtToken(getUser.getUserName(), additionalClaims);
 
@@ -195,22 +194,6 @@ public class AuthController {
     response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
     return ResponseEntity.ok(new ResponseModel<String>("log out success", "user logged out"));
-  }
-
-  @GetMapping("/user-roles")
-  public ResponseEntity<ResponseModel<String>> getUserRoles(@AuthenticationPrincipal AuthUser user) {
-    log.info("Auth Controller {}:{}", "GET", "fetch User Roles");
-    String result = "";
-    Optional<String> userRole = user.getAuthorities().stream().map(m -> m.getAuthority()).findFirst();
-
-    if (userRole.isPresent()) {
-      Optional<RoleDto> roleDto = roleService.findByCode(userRole.get());
-
-      if (roleDto.isPresent()) {
-        result = roleDto.get().getDescription();
-      }
-    }
-    return ResponseEntity.ok(new ResponseModel<String>(result, "success to fetch user roles"));
   }
 
   private boolean authenticateLogin(LoginRequest login) {

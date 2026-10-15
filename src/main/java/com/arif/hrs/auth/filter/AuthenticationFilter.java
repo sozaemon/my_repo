@@ -71,7 +71,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     if (token != null) {
       try {
         username = jwtService.extractUserName(token);
-        role = (String) jwtService.extractAdditionalClaims(token, AuthConstant.CLAIMS_ROLE);
+        role = String.valueOf(jwtService.extractAdditionalClaims(token, AuthConstant.CLAIMS_ROLE));
       } catch (Exception e) {
         log.error("fetch username from token fail", e);
       }
@@ -81,9 +81,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
       UserDetails user = userAuthService.loadUserByUsername(username);
       Boolean tokenIsValid = jwtService.validateToken(token, user);
 
-      if (role == null) {
-        role = "UNKNOWN_ROLE";
-      }
+
 
       if (tokenIsValid.booleanValue()) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

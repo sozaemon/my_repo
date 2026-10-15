@@ -5,5 +5,5 @@ import java.util.Optional;
 import com.arif.hrs.domain.dto.RoleDto;
 
 public interface RoleServiceDomain extends CommonServiceDomain<RoleDto, Integer> {
-  Optional<RoleDto> findByCode(String roleCode);
+  Optional<RoleDto> findByName(String roleName);
 }

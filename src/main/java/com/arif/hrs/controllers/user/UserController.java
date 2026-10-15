@@ -29,7 +29,9 @@ import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.FUserDto;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
+import com.arif.hrs.domain.dto.RoleDto;
 import com.arif.hrs.domain.dto.UserDto;
+import com.arif.hrs.domain.service.RoleServiceDomain;
 import com.arif.hrs.domain.service.UserAuthServiceDomain;
 import com.arif.hrs.domain.service.UserServiceDomain;
 import com.arif.hrs.mapper.UserMapper;
@@ -44,12 +46,14 @@ public class UserController {
   private final UserAuthServiceDomain userAuthService;
   private final UserServiceDomain userService;
   private final UserMapper mapper;
+   private final RoleServiceDomain roleService;
 
   public UserController(UserAuthServiceDomain userAuthServiceDomain, UserServiceDomain userServiceDomain,
-      UserMapper mapper) {
+      UserMapper mapper, RoleServiceDomain roleService) {
     this.userAuthService = userAuthServiceDomain;
     this.userService = userServiceDomain;
     this.mapper = mapper;
+    this.roleService =roleService;
   }
 
   @GetMapping("")
@@ -110,6 +114,22 @@ public class UserController {
         request.getNewPAssword());
 
     return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(result), "Success update password");
+  }
+
+  @GetMapping("/user-roles")
+  public ResponseEntity<ResponseModel<String>> getUserRoles(@AuthenticationPrincipal AuthUser user) {
+    log.info("Auth Controller {}:{}", "GET", "fetch User Roles");
+    String result = "";
+    Optional<String> userRole = user.getAuthorities().stream().map(m -> m.getAuthority()).findFirst();
+
+    if (userRole.isPresent()) {
+      Optional<RoleDto> roleDto = roleService.findByName(userRole.get());
+
+      if (roleDto.isPresent()) {
+        result = roleDto.get().getDescription();
+      }
+    }
+    return ResponseEntity.ok(new ResponseModel<String>(result, "success to fetch user roles"));
   }
 
 }

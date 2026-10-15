@@ -47,7 +47,13 @@ public class DynamicAuthorizationManager implements AuthorizationManager<Request
 
     // skip validation on white listed request
     if (Arrays
-        .asList("/api-docs", "/swagger-ui/index.html", "/api/auth" + AuthConstant.REFRESH_REQUEST)
+        .asList(
+          "/api-docs",
+           "/swagger-ui/index.html",
+            "/api/auth" + AuthConstant.REFRESH_REQUEST, 
+            "/api/user",
+            "/api/user/user-roles",
+            "/api/user/update-password")
         .contains(requestUri)) {
       return new AuthorizationDecision(true);
     }
