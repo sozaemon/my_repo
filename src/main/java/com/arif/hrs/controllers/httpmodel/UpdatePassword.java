@@ -8,8 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdatePassword {
-  @JsonProperty("username")
-  String userName;
   @JsonProperty("oldPassword")
   String oldPassword;
   @JsonProperty("newPassword")

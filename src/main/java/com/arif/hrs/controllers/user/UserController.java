@@ -109,8 +109,13 @@ public class UserController {
   }
 
   @PatchMapping("/update-password")
-  public ResponseEntity<ResponseModel<User>> updatePassword(@RequestBody UpdatePassword request) {
-    UserDto result = userService.updatePassword(request.getUserName(), request.getOldPassword(),
+  public ResponseEntity<ResponseModel<User>> updatePassword(
+    @AuthenticationPrincipal AuthUser user,
+    @RequestBody UpdatePassword request) {
+
+    log.info("Auth Controller {}:{}", "POST", "Update password");
+    String username = user.getUsername();
+    UserDto result = userService.updatePassword(username, request.getOldPassword(),
         request.getNewPAssword());
 
     return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(result), "Success update password");
