@@ -1,5 +1,6 @@
 package com.arif.hrs.domain.service;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,8 @@ public interface RoleAccessServiceDomain extends CommonServiceDomain<RoleAccessD
   public List<RoleAccessDto> assignRolesToAccess(List<Integer> roleIds, Integer accessId);
 
   public UploadHeaderDto uploadRoleAccess(MultipartFile file, String description);
+
+  public ByteArrayInputStream generateUploadTemplate();
 
   public PageDto<RoleAccessUploadDto> pageUpload(PaginationDto pageRequest);
 

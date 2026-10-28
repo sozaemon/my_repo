@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import com.arif.hrs.controllers.httpmodel.Role;
 import com.arif.hrs.domain.dto.RoleDto;
 import com.arif.hrs.model.RoleModel;
+import com.arif.hrs.util.excel.excelmodel.RoleExcelModel;
 
 @Mapper(componentModel = "spring")
 public interface RoleMapper {
@@ -37,5 +38,10 @@ public interface RoleMapper {
   @Mapping(source = "description", target = "description")
   @Mapping(source = "active", target = "active")
   RoleDto httpToDto(Role http);
+
+  @Mapping(source = "code", target = "code")
+  @Mapping(source = "name", target = "name")
+  @Mapping(source = "description", target = "description")
+  RoleExcelModel modelToExcel(RoleModel model);
 
 }

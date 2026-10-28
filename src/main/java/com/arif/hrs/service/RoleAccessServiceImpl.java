@@ -1,5 +1,8 @@
 package com.arif.hrs.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.logging.log4j.util.Strings;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,6 +25,7 @@ import com.arif.hrs.domain.dto.UploadHeaderDto;
 import com.arif.hrs.domain.service.RoleAccessServiceDomain;
 import com.arif.hrs.mapper.RoleAccessMapper;
 import com.arif.hrs.mapper.RoleAccessUploadMapper;
+import com.arif.hrs.mapper.RoleMapper;
 import com.arif.hrs.mapper.UploadHeaderMapper;
 import com.arif.hrs.model.AccessModel;
 import com.arif.hrs.model.RoleAccessModel;
@@ -42,7 +47,10 @@ import com.arif.hrs.repository.specification.SpecificationFilter;
 import com.arif.hrs.repository.specification.SpecificationFilterWithJoin;
 import com.arif.hrs.repository.specification.specifications.RoleAccessSpecification;
 import com.arif.hrs.service.serviceutility.CommonImpl;
+import com.arif.hrs.util.excel.ExcelGenerator;
 import com.arif.hrs.util.excel.ExcelReader;
+import com.arif.hrs.util.excel.excelmodel.RoleExcelModel;
+import com.arif.hrs.util.excel.service.RoleAccessTemplateExcelBuilder;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -61,13 +69,15 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
   private final UploadHeaderMapper uploadHeaderMapper;
   private final RoleAccessUploadMapper uploadMapper;
   private final AccessRepository accessRepository;
+  private final RoleMapper roleMapper;
 
   public RoleAccessServiceImpl(RoleAccessRepository roleAccessRepository, RoleAccessMapper mapper,
       RoleRepository roleRepository, UploadHeaderRepository uploadHeaderRepository,
       RoleAccessUploadRepository roleAccessUploadRepository,
       UploadHeaderMapper uploadHeaderMapper,
       RoleAccessUploadMapper uploadMapper,
-      AccessRepository accessRepository) {
+      AccessRepository accessRepository,
+      RoleMapper roleMapper) {
     this.roleAccessRepository = roleAccessRepository;
     this.mapper = mapper;
     this.roleRepository = roleRepository;
@@ -76,6 +86,7 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
     this.uploadHeaderMapper = uploadHeaderMapper;
     this.uploadMapper = uploadMapper;
     this.accessRepository = accessRepository;
+    this.roleMapper = roleMapper;
   }
 
   @Override
@@ -212,10 +223,11 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
         List<String> message = new ArrayList<>();
 
         for (String r : sRole) {
-          boolean valid = roles.stream().allMatch(a -> a.getCode().equals(r));
+          String roleCode = r.trim();
+          boolean valid = roles.stream().anyMatch(a -> a.getCode().equals(roleCode));
           if (!valid) {
             status = UploadStatusEnum.NOTVALID;
-            message.add(String.format("Invalid Role: %s", r));
+            message.add(String.format("Invalid Role: %s", roleCode));
           }
         }
 
@@ -262,6 +274,31 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
     }
 
     return uploadHeaderMapper.modelToDto(header);
+  }
+
+  @Override
+  public ByteArrayInputStream generateUploadTemplate() {
+    List<RoleExcelModel> roles = roleRepository.findAll().stream()
+        .map(roleMapper::modelToExcel).toList();
+
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    Workbook wb = null;
+    try {
+      wb = ExcelGenerator.createExcel(new RoleAccessTemplateExcelBuilder(roles));
+      wb.write(out);
+    } catch (IOException e) {
+      log.error("fail to generate role access upload template", e);
+    } finally {
+      try {
+        if (wb != null) {
+          wb.close();
+        }
+      } catch (IOException e) {
+        log.error("fail to close workbook", e);
+      }
+    }
+
+    return new ByteArrayInputStream(out.toByteArray());
   }
 
   @Override

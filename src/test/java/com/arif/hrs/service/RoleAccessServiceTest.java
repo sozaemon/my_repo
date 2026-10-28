@@ -7,9 +7,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -25,10 +29,13 @@ import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.RoleAccessDto;
 import com.arif.hrs.mapper.RoleAccessMapper;
+import com.arif.hrs.mapper.RoleMapper;
 import com.arif.hrs.model.AccessModel;
 import com.arif.hrs.model.RoleAccessModel;
 import com.arif.hrs.model.RoleModel;
 import com.arif.hrs.repository.RoleAccessRepository;
+import com.arif.hrs.repository.RoleRepository;
+import com.arif.hrs.util.excel.excelmodel.RoleExcelModel;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -40,6 +47,12 @@ public class RoleAccessServiceTest {
 
   @Mock
   private RoleAccessMapper mapper;
+
+  @Mock
+  private RoleRepository roleRepository;
+
+  @Mock
+  private RoleMapper roleMapper;
 
   @InjectMocks
   private RoleAccessServiceImpl roleAccessService;
@@ -212,6 +225,42 @@ public class RoleAccessServiceTest {
     verify(mapper).dtoToModel(dtoCaptor.capture());
     assertEquals(3, dtoCaptor.getValue().getRoleId());
     assertEquals(accessId, dtoCaptor.getValue().getAccessId());
+  }
+
+  @Test
+  void generateUploadTemplateContainsRoleAccessAndRoleReferenceSheets() throws Exception {
+    RoleModel role = new RoleModel();
+    role.setCode("ADMIN");
+    role.setName("ROLE_ADMIN");
+    role.setDescription("Administrator");
+
+    RoleExcelModel roleExcel = new RoleExcelModel();
+    roleExcel.setCode("ADMIN");
+    roleExcel.setName("ROLE_ADMIN");
+    roleExcel.setDescription("Administrator");
+
+    when(roleRepository.findAll()).thenReturn(List.of(role));
+    when(roleMapper.modelToExcel(role)).thenReturn(roleExcel);
+
+    ByteArrayInputStream result = roleAccessService.generateUploadTemplate();
+
+    try (Workbook workbook = WorkbookFactory.create(result)) {
+      assertEquals(2, workbook.getNumberOfSheets());
+      assertEquals("Role Access", workbook.getSheetName(0));
+      assertEquals("Roles", workbook.getSheetName(1));
+
+      Sheet template = workbook.getSheetAt(0);
+      assertEquals("Name", template.getRow(1).getCell(0).getStringCellValue());
+      assertEquals("Path", template.getRow(1).getCell(1).getStringCellValue());
+      assertEquals("Method", template.getRow(1).getCell(2).getStringCellValue());
+      assertEquals("Description", template.getRow(1).getCell(3).getStringCellValue());
+      assertEquals("Roles", template.getRow(1).getCell(4).getStringCellValue());
+
+      Sheet roles = workbook.getSheetAt(1);
+      assertEquals("Code", roles.getRow(0).getCell(0).getStringCellValue());
+      assertEquals("ADMIN", roles.getRow(1).getCell(0).getStringCellValue());
+      assertEquals("ROLE_ADMIN", roles.getRow(1).getCell(1).getStringCellValue());
+    }
   }
 
   private static RoleAccessDto roleAccessDto(

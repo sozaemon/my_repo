@@ -49,23 +49,34 @@ public abstract class ExcelReader<T> {
 
       int r = startDataRow;
 
-      while (r < sheet.getLastRowNum()) {
+      while (r <= sheet.getLastRowNum()) {
         Row row = sheet.getRow(r);
-        Map<String, Object> mappedRow = new HashMap<>();
 
-        for (int h = 1; h < headers.length; h++) {
+        if (row == null) {
+          r++;
+          continue;
+        }
+
+        Map<String, Object> mappedRow = new HashMap<>();
+        boolean hasValue = false;
+
+        for (int h = 0; h < headers.length; h++) {
           if (mappedRow.get(headers[h]) != null) {
             throw new IllegalArgumentException("Duplicated headers");
           }
 
           Cell cell = row.getCell(h);
-
-          mappedRow.put(headers[h], cell == null ? ""
+          String value = cell == null ? ""
               : formatter
-                  .formatCellValue(cell).trim());
+                  .formatCellValue(cell).trim();
 
+          mappedRow.put(headers[h], value);
+          hasValue = hasValue || !value.isEmpty();
         }
-        result.add(mapToResult(mappedRow));
+
+        if (hasValue) {
+          result.add(mapToResult(mappedRow));
+        }
         r++;
       }
 

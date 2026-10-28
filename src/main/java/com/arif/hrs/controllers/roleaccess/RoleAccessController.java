@@ -1,7 +1,10 @@
 package com.arif.hrs.controllers.roleaccess;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -109,6 +112,21 @@ public class RoleAccessController {
     return ControllerUtil.createSuccessResponse(result, "success to assign roles access");
   }
 
+  @GetMapping("/upload/template")
+  public ResponseEntity<InputStreamResource> downloadUploadTemplate() {
+    log.info("download role access upload template");
+
+    ByteArrayInputStream is = roleAccessService.generateUploadTemplate();
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=role-access-upload-template.xlsx");
+
+    return ResponseEntity.ok()
+        .headers(headers)
+        .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+        .body(new InputStreamResource(is));
+  }
+
   @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ResponseModel<UploadHeader>> uploadRoleAccess(
       @RequestPart("file") MultipartFile file,
@@ -119,7 +137,7 @@ public class RoleAccessController {
   }
 
   @PatchMapping(value = "/upload/update")
-  public ResponseEntity<ResponseModel<RoleAccessUpload>> updateUploadDate(@RequestBody RoleAccessUpload uploadData) {
+  public ResponseEntity<ResponseModel<RoleAccessUpload>> updateUploadData(@RequestBody RoleAccessUpload uploadData) {
     RoleAccessUploadDto dto = roleAccessService.updateUpload(roleAccessUploadMapper.httpToDto(uploadData));
 
     return ControllerUtil.createSuccessResponse(roleAccessUploadMapper.dtoToHttp(dto), "success update upload data");
