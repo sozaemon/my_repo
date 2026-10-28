@@ -2,7 +2,7 @@ package com.arif.hrs.domain.dto;
 
 import java.sql.Timestamp;
 
-import com.arif.hrs.domain.dto.annotatons.SpecificationMapping;
+import com.arif.hrs.domain.dto.annotations.SpecificationMapping;
 
 import lombok.Getter;
 import lombok.Setter;

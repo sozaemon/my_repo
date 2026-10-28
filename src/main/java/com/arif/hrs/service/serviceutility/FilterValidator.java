@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.arif.hrs.domain.dto.annotatons.SpecificationMapping;
+import com.arif.hrs.domain.dto.annotations.SpecificationMapping;
 import com.arif.hrs.repository.specification.SpecificationFilterWithJoin;
 
 import io.micrometer.common.util.StringUtils;

@@ -1,0 +1,50 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext 
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd 
+    http://www.liquibase.org/xml/ns/dbchangelog 
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+  <changeSet author="arif" id="202610201401-1">
+    <createTable tableName="u_upload_header">
+      <column autoIncrement="true" name="id" startWith="1" type ="INTEGER">
+        <constraints nullable="false" primaryKey="true" 
+          primaryKeyName="u_upload_header_pk"/>
+      </column>
+      <column name="modulename" type="VARCHAR">
+        <constraints nullable="false"/>
+      </column>
+      <column name="status" type="VARCHAR">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created" type="TIMESTAMP WITHOUT TIME ZONE"/>
+      <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE"/>
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedby" type="VARCHAR(150)"/>
+    </createTable>
+  </changeSet>
+  <changeSet author="arif" id="202610201401-2">
+    <addColumn tableName="u_role_access">
+      <column name="upload_header_id" type="INTEGER" />
+    </addColumn>
+  </changeSet>
+  <changeSet author="arif" id="202610201401-3">
+    <addForeignKeyConstraint baseColumnNames="upload_header_id"
+      baseTableName="u_role_access"
+      constraintName="fk_u_header_role_access"
+      deferrable="false" 
+      initiallyDeferred="false" 
+      onDelete="NO ACTION" 
+      onUpdate="NO ACTION" 
+      referencedColumnNames="id" 
+      referencedTableName="u_upload_header" 
+      validate="true"
+    />
+   </changeSet>
+   <changeSet author="arif" id="202610201401-4">
+      <addColumn tableName="u_upload_header">
+        <column name="description" type="VARCHAR(150)" />
+      </addColumn>
+   </changeSet>
+</databaseChangeLog>

@@ -3,9 +3,13 @@ package com.arif.hrs.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.arif.hrs.model.enums.AccessMethodEnum;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,7 +40,8 @@ public class AccessModel extends BasicModel {
   private String path;
 
   @Column(name = "method")
-  private String method;
+  @Enumerated(EnumType.STRING)
+  private AccessMethodEnum method;
 
   @Column(name = "description")
   private String description;

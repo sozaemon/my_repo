@@ -19,6 +19,7 @@ import com.arif.hrs.domain.dto.RoleAccessDto;
 import com.arif.hrs.model.AccessModel;
 import com.arif.hrs.model.RoleAccessModel;
 import com.arif.hrs.model.RoleModel;
+import com.arif.hrs.model.enums.AccessMethodEnum;
 import com.arif.hrs.service.serviceutility.CommonImpl;
 
 @DataJpaTest
@@ -37,8 +38,8 @@ public class RoleAccessRepositoryTest {
   void setupData() {
     RoleModel adminRole = roleRepository.save(roleModel("Admin", "ADMIN"));
     RoleModel userRole = roleRepository.save(roleModel("User", "USER"));
-    AccessModel readAccess = accessRepository.save(accessModel("Read", "GET", "/read"));
-    AccessModel writeAccess = accessRepository.save(accessModel("Write", "POST", "/write"));
+    AccessModel readAccess = accessRepository.save(accessModel("Read", AccessMethodEnum.valueOf("GET"), "/read"));
+    AccessModel writeAccess = accessRepository.save(accessModel("Write", AccessMethodEnum.valueOf("POST"), "/write"));
 
     roleAccessRepository.save(roleAccessModel(adminRole, readAccess));
     roleAccessRepository.save(roleAccessModel(adminRole, writeAccess));
@@ -89,7 +90,7 @@ public class RoleAccessRepositoryTest {
     return model;
   }
 
-  private static AccessModel accessModel(String name, String method, String path) {
+  private static AccessModel accessModel(String name, AccessMethodEnum method, String path) {
     AccessModel model = new AccessModel();
     model.setName(name);
     model.setMethod(method);

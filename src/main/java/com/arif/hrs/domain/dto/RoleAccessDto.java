@@ -1,6 +1,6 @@
 package com.arif.hrs.domain.dto;
 
-import com.arif.hrs.domain.dto.annotatons.SpecificationMapping;
+import com.arif.hrs.domain.dto.annotations.SpecificationMapping;
 
 import lombok.Data;
 

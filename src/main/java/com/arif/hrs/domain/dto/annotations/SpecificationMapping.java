@@ -1,4 +1,4 @@
-package com.arif.hrs.domain.dto.annotatons;
+package com.arif.hrs.domain.dto.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

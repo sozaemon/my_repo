@@ -2,6 +2,7 @@ package com.arif.hrs.service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,13 +61,6 @@ public class UserServiceImpl implements UserServiceDomain {
   }
 
   @Override
-  @Deprecated
-  public UserDto create(UserDto v) {
-    // not used
-    return null;
-  }
-
-  @Override
   public UserDto update(UserDto v) throws EntityNotFoundException {
     log.info("Update User");
 
@@ -119,7 +113,7 @@ public class UserServiceImpl implements UserServiceDomain {
     UserModel model = new UserModel();
     model.setFullName(fUserDto.getFullName());
     model.setUserName(fUserDto.getUserName());
-    model.setExpiryDate(Timestamp.from(ZonedDateTime.now().plusMonths(3l).toInstant()));
+    model.setExpiryDate(Timestamp.from(ZonedDateTime.now(ZoneId.systemDefault()).plusMonths(3l).toInstant()));
 
     String encryptedPassword = passwordEncoder.encode(fUserDto.getPlainPassword());
 
@@ -132,7 +126,7 @@ public class UserServiceImpl implements UserServiceDomain {
 
   @Override
   public UserDto updatePassword(String userName, String oldPassword, String newPassword) {
-    log.info("Update User Password");
+    log.info("Update User Password {}, {}, {}", userName, oldPassword, newPassword);
 
     List<SpecificationFilter> filters = new ArrayList<>();
 
@@ -151,9 +145,7 @@ public class UserServiceImpl implements UserServiceDomain {
 
     UserModel xUser = user.get();
 
-    final String encryptedOldPassword = passwordEncoder.encode(oldPassword);
-
-    if (!passwordEncoder.matches(xUser.getPassword(), encryptedOldPassword)) {
+    if (!passwordEncoder.matches(oldPassword, xUser.getPassword())) {
       throw new ValidationException("Old Password is not matched");
     }
 

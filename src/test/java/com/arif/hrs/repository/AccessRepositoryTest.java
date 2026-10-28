@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.arif.hrs.domain.dto.AccessDto;
 import com.arif.hrs.domain.dto.FilterDto;
 import com.arif.hrs.model.AccessModel;
+import com.arif.hrs.model.enums.AccessMethodEnum;
 import com.arif.hrs.service.serviceutility.CommonImpl;
 
 @DataJpaTest
@@ -26,11 +27,11 @@ public class AccessRepositoryTest {
   private AccessRepository accessRepository;
 
   private AccessModel[] sourceData = new AccessModel[] {
-      accessModel("Test Access 1", "GET", "/test/test-1", "test access 1"),
-      accessModel("Test Access 2", "POST", "/test/test-2", "test access 2"),
-      accessModel("Test Access 3", "PUT", "/test/test-3", "test access 3"),
-      accessModel("Test Access 4", "PATCH", "/test/test-4", "test access 4"),
-      accessModel("Test Access 5", "DELETE", "/test/test-5", "test access 5")
+      accessModel("Test Access 1", AccessMethodEnum.valueOf("GET"), "/test/test-1", "test access 1"),
+      accessModel("Test Access 2", AccessMethodEnum.valueOf("POST"), "/test/test-2", "test access 2"),
+      accessModel("Test Access 3", AccessMethodEnum.valueOf("PUT"), "/test/test-3", "test access 3"),
+      accessModel("Test Access 4", AccessMethodEnum.valueOf("PATCH"), "/test/test-4", "test access 4"),
+      accessModel("Test Access 5", AccessMethodEnum.valueOf("DELETE"), "/test/test-5", "test access 5")
   };
 
   @BeforeEach
@@ -78,7 +79,7 @@ public class AccessRepositoryTest {
 
   private static AccessModel accessModel(
       String name,
-      String method,
+      AccessMethodEnum method,
       String path,
       String description) {
     AccessModel model = new AccessModel();

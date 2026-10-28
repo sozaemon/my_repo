@@ -30,6 +30,7 @@ import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.mapper.AccessMapper;
 import com.arif.hrs.model.AccessModel;
+import com.arif.hrs.model.enums.AccessMethodEnum;
 import com.arif.hrs.repository.AccessRepository;
 import com.arif.hrs.util.excel.excelmodel.AccessExcelModel;
 
@@ -48,8 +49,9 @@ class AccessServiceTest {
   @Test
   void getAccessByRolesAndPathAndMethodReturnsMappedAccesses() {
     List<String> roles = List.of("ADMIN");
-    AccessModel model = accessModel(1, "View employees", "/employees", "GET", "List employees");
-    AccessDto dto = accessDto(1, "View employees", "/employees", "GET", "List employees");
+    AccessModel model = accessModel(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
+    AccessDto dto = accessDto(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"), "List employees");
     when(accessRepository.findAll(
         org.mockito.ArgumentMatchers.<Specification<AccessModel>>any())).thenReturn(List.of(model));
     when(mapper.modelToDto(model)).thenReturn(dto);
@@ -63,8 +65,9 @@ class AccessServiceTest {
 
   @Test
   void getOneReturnsMappedAccessWhenFound() {
-    AccessModel model = accessModel(1, "View employees", "/employees", "GET", "List employees");
-    AccessDto dto = accessDto(1, "View employees", "/employees", "GET", "List employees");
+    AccessModel model = accessModel(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
+    AccessDto dto = accessDto(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"), "List employees");
     when(accessRepository.findById(1)).thenReturn(Optional.of(model));
     when(mapper.modelToDto(model)).thenReturn(dto);
 
@@ -87,10 +90,14 @@ class AccessServiceTest {
 
   @Test
   void createMapsAndSavesAccess() {
-    AccessDto request = accessDto(null, "View employees", "/employees", "GET", "List employees");
-    AccessModel model = accessModel(null, "View employees", "/employees", "GET", "List employees");
-    AccessDto savedDto = accessDto(1, "View employees", "/employees", "GET", "List employees");
-    AccessModel savedModel = accessModel(1, "View employees", "/employees", "GET", "List employees");
+    AccessDto request = accessDto(null, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
+    AccessModel model = accessModel(null, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
+    AccessDto savedDto = accessDto(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
+    AccessModel savedModel = accessModel(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
     when(mapper.dtoToModel(request)).thenReturn(model);
     when(accessRepository.save(model)).thenReturn(savedModel);
     when(mapper.modelToDto(savedModel)).thenReturn(savedDto);
@@ -105,9 +112,11 @@ class AccessServiceTest {
 
   @Test
   void updateChangesAndSavesExistingAccess() {
-    AccessDto request = accessDto(1, "Updated name", "/employees", "POST", "Updated description");
-    AccessModel existing = accessModel(1, "Old name", "/employees", "GET", "Old description");
-    AccessDto updatedDto = accessDto(1, "Updated name", "/employees", "POST", "Updated description");
+    AccessDto request = accessDto(1, "Updated name", "/employees", AccessMethodEnum.valueOf("POST"),
+        "Updated description");
+    AccessModel existing = accessModel(1, "Old name", "/employees", AccessMethodEnum.valueOf("GET"), "Old description");
+    AccessDto updatedDto = accessDto(1, "Updated name", "/employees", AccessMethodEnum.valueOf("POST"),
+        "Updated description");
     when(accessRepository.findById(1)).thenReturn(Optional.of(existing));
     when(accessRepository.save(existing)).thenReturn(existing);
     when(mapper.modelToDto(existing)).thenReturn(updatedDto);
@@ -124,7 +133,8 @@ class AccessServiceTest {
 
   @Test
   void updateThrowsWhenAccessDoesNotExist() {
-    AccessDto request = accessDto(1, "Updated name", "/employees", "POST", "Updated description");
+    AccessDto request = accessDto(1, "Updated name", "/employees", AccessMethodEnum.valueOf("POST"),
+        "Updated description");
     when(accessRepository.findById(1)).thenReturn(Optional.empty());
 
     assertThrows(EntityNotFoundException.class, () -> accessService.update(request));
@@ -134,7 +144,8 @@ class AccessServiceTest {
 
   @Test
   void deleteRemovesExistingAccess() {
-    AccessModel model = accessModel(1, "View employees", "/employees", "GET", "List employees");
+    AccessModel model = accessModel(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
     when(accessRepository.findById(1)).thenReturn(Optional.of(model));
 
     accessService.delete(1);
@@ -158,8 +169,9 @@ class AccessServiceTest {
     request.setPageSize(5);
     request.setSortBy("name");
     request.setSortDirection("asc");
-    AccessModel model = accessModel(1, "View employees", "/employees", "GET", "List employees");
-    AccessDto dto = accessDto(1, "View employees", "/employees", "GET", "List employees");
+    AccessModel model = accessModel(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
+    AccessDto dto = accessDto(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"), "List employees");
     when(accessRepository.findAll(
         org.mockito.ArgumentMatchers.<Specification<AccessModel>>isNull(),
         any(Pageable.class)))
@@ -183,7 +195,8 @@ class AccessServiceTest {
 
   @Test
   void exportToExcelReturnsWorkbookBytes() {
-    AccessModel model = accessModel(1, "View employees", "/employees", "GET", "List employees");
+    AccessModel model = accessModel(1, "View employees", "/employees", AccessMethodEnum.valueOf("GET"),
+        "List employees");
     AccessExcelModel excelModel = new AccessExcelModel();
     excelModel.setName("View employees");
     excelModel.setPath("/employees");
@@ -204,7 +217,7 @@ class AccessServiceTest {
       Integer id,
       String name,
       String path,
-      String method,
+      AccessMethodEnum method,
       String description) {
     AccessModel model = new AccessModel();
     model.setId(id);
@@ -219,7 +232,7 @@ class AccessServiceTest {
       Integer id,
       String name,
       String path,
-      String method,
+      AccessMethodEnum method,
       String description) {
     AccessDto dto = new AccessDto();
     dto.setId(id);

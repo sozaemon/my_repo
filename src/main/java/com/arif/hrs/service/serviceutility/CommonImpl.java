@@ -16,11 +16,26 @@ import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.repository.specification.SpecificationBuilder;
 import com.arif.hrs.repository.specification.SpecificationFilterWithJoin;
 
+@SuppressWarnings("hiding")
 public class CommonImpl {
   private CommonImpl() {
   }
 
-  @Deprecated
+  /**
+   * build specification using pagination dto
+   * this method using pagination dto properties filters to generate
+   * specification for generic type
+   * 
+   * @deprecated()
+   *               it will be replace with with
+   *               {@link #buildFilterSpecificationDto(filterDto, dtoClass)}
+   *               this new method implement specification join that defined in
+   *               dto class
+   * @param <T>
+   * @param paginationRequest
+   * @return
+   */
+  @Deprecated(forRemoval = true)
   public static <T> Specification<T> buildPaginationSpecification(PaginationDto paginationRequest) {
     List<SpecificationFilterWithJoin> filters = paginationRequest.getFilters()
         .stream().map(SpecificationFilterWithJoin::new)
@@ -30,6 +45,18 @@ public class CommonImpl {
     return builder.buildSpecification();
   }
 
+  /**
+   * build specification with generic type Model
+   * using {@link com.arif.hrs.domain.dto.FilterDto} as filter parameter
+   * {@link com.arif.hrs.service.serviceutility.FilterValidator} to mapping join
+   * table
+   * join table bind in dto class
+   * 
+   * @param <T>
+   * @param filterDto
+   * @param dtoClass
+   * @return
+   */
   public static <T> Specification<T> buildFilterSpecificationDto(List<FilterDto> filterDto, Class<?> dtoClass) {
     List<SpecificationFilterWithJoin> filters = filterDto
         .stream().map(SpecificationFilterWithJoin::new)
@@ -43,7 +70,19 @@ public class CommonImpl {
     return builder.buildSpecification();
   }
 
-  @Deprecated
+  /**
+   * build pagination Page using pagination dto
+   * 
+   * @deprecated()
+   *               will be replace with
+   *               {@link #buildPaginationPage(paginationRequest, defaultSort, dtoClass)}
+   *               this new method implement specification join that defined in
+   *               dto class
+   * @param paginationRequest
+   * @param defaultSort
+   * @return
+   */
+  @Deprecated(forRemoval = true)
   public static Pageable buildPaginationPage(PaginationDto paginationRequest, String defaultSort) {
     Sort.Direction direction = paginationRequest.getSortDirection() != null
         && paginationRequest.getSortDirection().equalsIgnoreCase("asc") ? Sort.Direction.ASC
@@ -58,6 +97,16 @@ public class CommonImpl {
     return PageRequest.of(paginationRequest.getPage(), paginationRequest.getPageSize(), sort);
   }
 
+  /**
+   * build pagination Page using {@link com.arif.hrs.domain.dto.PaginationDto}
+   * {@link com.arif.hrs.service.serviceutility.FilterValidator} to mapping
+   * join table bind in dto class
+   * 
+   * @param paginationRequest
+   * @param defaultSort
+   * @param dtoClass
+   * @return
+   */
   public static Pageable buildPaginationPage(PaginationDto paginationRequest, String defaultSort, Class<?> dtoClass) {
 
     Sort.Direction direction = paginationRequest.getSortDirection() != null

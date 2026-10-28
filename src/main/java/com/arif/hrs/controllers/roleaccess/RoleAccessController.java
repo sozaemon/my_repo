@@ -2,26 +2,36 @@ package com.arif.hrs.controllers.roleaccess;
 
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.arif.hrs.controllers.ResponseModel;
 import com.arif.hrs.controllers.httpmodel.AssignRoleAccessRequest;
 import com.arif.hrs.controllers.httpmodel.PageResponse;
 import com.arif.hrs.controllers.httpmodel.PaginationRequest;
 import com.arif.hrs.controllers.httpmodel.RoleAccess;
+import com.arif.hrs.controllers.httpmodel.RoleAccessUpload;
+import com.arif.hrs.controllers.httpmodel.UploadHeader;
 import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.RoleAccessDto;
+import com.arif.hrs.domain.dto.RoleAccessUploadDto;
+import com.arif.hrs.domain.dto.UploadHeaderDto;
 import com.arif.hrs.domain.service.RoleAccessServiceDomain;
 import com.arif.hrs.mapper.RoleAccessMapper;
+import com.arif.hrs.mapper.RoleAccessUploadMapper;
+import com.arif.hrs.mapper.UploadHeaderMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,10 +42,18 @@ public class RoleAccessController {
 
   private final RoleAccessServiceDomain roleAccessService;
   private final RoleAccessMapper mapper;
+  private final UploadHeaderMapper uploadHeaderMapper;
+  private final RoleAccessUploadMapper roleAccessUploadMapper;
 
-  public RoleAccessController(RoleAccessServiceDomain roleAccessService, RoleAccessMapper mapper) {
+  public RoleAccessController(
+      RoleAccessServiceDomain roleAccessService,
+      RoleAccessMapper mapper,
+      UploadHeaderMapper uploadHeaderMapper,
+      RoleAccessUploadMapper roleAccessUploadMapper) {
     this.roleAccessService = roleAccessService;
     this.mapper = mapper;
+    this.uploadHeaderMapper = uploadHeaderMapper;
+    this.roleAccessUploadMapper = roleAccessUploadMapper;
   }
 
   @PostMapping("/list")
@@ -90,4 +108,33 @@ public class RoleAccessController {
 
     return ControllerUtil.createSuccessResponse(result, "success to assign roles access");
   }
+
+  @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<ResponseModel<UploadHeader>> uploadRoleAccess(
+      @RequestPart("file") MultipartFile file,
+      @RequestPart("description") String description) {
+    UploadHeaderDto dto = roleAccessService.uploadRoleAccess(file, description);
+
+    return ControllerUtil.createSuccessResponse(uploadHeaderMapper.dtoToHttp(dto), "success upload role access");
+  }
+
+  @PatchMapping(value = "/upload/update")
+  public ResponseEntity<ResponseModel<RoleAccessUpload>> updateUploadDate(@RequestBody RoleAccessUpload uploadData) {
+    RoleAccessUploadDto dto = roleAccessService.updateUpload(roleAccessUploadMapper.httpToDto(uploadData));
+
+    return ControllerUtil.createSuccessResponse(roleAccessUploadMapper.dtoToHttp(dto), "success update upload data");
+  }
+
+  @DeleteMapping(value = "/upload/delete/{uploadId}")
+  public ResponseEntity<ResponseModel<String>> deleteUploadData(@PathVariable("uploadId") Integer uploadId) {
+    roleAccessService.deleteRoleAccessUpload(uploadId);
+    return ControllerUtil.createSuccessResponse("Deleted", "success delete upload data");
+  }
+
+  @PostMapping(value = "/upload/process/{headerId}")
+  public ResponseEntity<ResponseModel<String>> processUpload(@PathVariable("headerId") Integer headerId) {
+    roleAccessService.processUploadData(headerId);
+    return ControllerUtil.createSuccessResponse("Success", "success process upload data");
+  }
+
 }

@@ -1,25 +1,48 @@
 package com.arif.hrs.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.RoleAccessDto;
+import com.arif.hrs.domain.dto.RoleAccessUploadDto;
+import com.arif.hrs.domain.dto.UploadHeaderDto;
 import com.arif.hrs.domain.service.RoleAccessServiceDomain;
 import com.arif.hrs.mapper.RoleAccessMapper;
+import com.arif.hrs.mapper.RoleAccessUploadMapper;
+import com.arif.hrs.mapper.UploadHeaderMapper;
 import com.arif.hrs.model.AccessModel;
 import com.arif.hrs.model.RoleAccessModel;
+import com.arif.hrs.model.RoleAccessUploadModel;
 import com.arif.hrs.model.RoleModel;
+import com.arif.hrs.model.UploadHeaderModel;
+import com.arif.hrs.model.UploadProperty;
+import com.arif.hrs.model.enums.AccessMethodEnum;
+import com.arif.hrs.model.enums.UploadHeaderStatusEnum;
+import com.arif.hrs.model.enums.UploadStatusEnum;
+import com.arif.hrs.repository.AccessRepository;
 import com.arif.hrs.repository.RoleAccessRepository;
+import com.arif.hrs.repository.RoleAccessUploadRepository;
+import com.arif.hrs.repository.RoleRepository;
+import com.arif.hrs.repository.UploadHeaderRepository;
+import com.arif.hrs.repository.specification.SpecificationBuilder;
+import com.arif.hrs.repository.specification.SpecificationEnum;
+import com.arif.hrs.repository.specification.SpecificationFilter;
+import com.arif.hrs.repository.specification.SpecificationFilterWithJoin;
 import com.arif.hrs.repository.specification.specifications.RoleAccessSpecification;
 import com.arif.hrs.service.serviceutility.CommonImpl;
+import com.arif.hrs.util.excel.ExcelReader;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -32,10 +55,27 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
 
   private final RoleAccessRepository roleAccessRepository;
   private final RoleAccessMapper mapper;
+  private final RoleRepository roleRepository;
+  private final UploadHeaderRepository uploadHeaderRepository;
+  private final RoleAccessUploadRepository roleAccessUploadRepository;
+  private final UploadHeaderMapper uploadHeaderMapper;
+  private final RoleAccessUploadMapper uploadMapper;
+  private final AccessRepository accessRepository;
 
-  public RoleAccessServiceImpl(RoleAccessRepository roleAccessRepository, RoleAccessMapper mapper) {
+  public RoleAccessServiceImpl(RoleAccessRepository roleAccessRepository, RoleAccessMapper mapper,
+      RoleRepository roleRepository, UploadHeaderRepository uploadHeaderRepository,
+      RoleAccessUploadRepository roleAccessUploadRepository,
+      UploadHeaderMapper uploadHeaderMapper,
+      RoleAccessUploadMapper uploadMapper,
+      AccessRepository accessRepository) {
     this.roleAccessRepository = roleAccessRepository;
     this.mapper = mapper;
+    this.roleRepository = roleRepository;
+    this.uploadHeaderRepository = uploadHeaderRepository;
+    this.roleAccessUploadRepository = roleAccessUploadRepository;
+    this.uploadHeaderMapper = uploadHeaderMapper;
+    this.uploadMapper = uploadMapper;
+    this.accessRepository = accessRepository;
   }
 
   @Override
@@ -145,6 +185,212 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
     }
 
     return createdRoles;
+  }
+
+  @Override
+  public UploadHeaderDto uploadRoleAccess(MultipartFile file, String description) {
+    final String[] uploadHeader = new String[] {
+        "Name",
+        "Path",
+        "Method",
+        "Description",
+        "Roles" };
+    List<RoleModel> roles = roleRepository.findAll();
+
+    UploadHeaderModel header = new UploadHeaderModel();
+    header.setModuleName("Role Access");
+    header.setDescription(description);
+    header.setStatus(UploadHeaderStatusEnum.UPLOADED);
+
+    final UploadHeaderModel savedHeader = uploadHeaderRepository.save(header);
+    ExcelReader<RoleAccessUploadModel> excelReader = new ExcelReader<RoleAccessUploadModel>() {
+      @Override
+      protected RoleAccessUploadModel mapToResult(Map<String, Object> input) {
+
+        UploadStatusEnum status = UploadStatusEnum.UPLOADED;
+        String[] sRole = String.valueOf(input.get("Roles")).split(",");
+        List<String> message = new ArrayList<>();
+
+        for (String r : sRole) {
+          boolean valid = roles.stream().allMatch(a -> a.getCode().equals(r));
+          if (!valid) {
+            status = UploadStatusEnum.NOTVALID;
+            message.add(String.format("Invalid Role: %s", r));
+          }
+        }
+
+        String inputMethod = String.valueOf(input.get("Method"));
+        if (!Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE").contains(inputMethod)) {
+          message.add(String.format("Invalid Method: %s", inputMethod));
+          status = UploadStatusEnum.NOTVALID;
+        }
+
+        RoleAccessUploadModel result = new RoleAccessUploadModel();
+
+        result.setUploadHeader(savedHeader);
+
+        result.setName(String.valueOf(input.get("Name")));
+        result.setPath(String.valueOf(input.get("Path")));
+        result.setMethod(AccessMethodEnum.valueOf(String.valueOf(input.get("Method"))));
+        result.setDescription(String.valueOf(input.get("Description")));
+        result.setRoles(String.valueOf(input.get("Roles")));
+
+        UploadProperty prop = new UploadProperty();
+        prop.setUploadStatus(status);
+
+        if (!message.isEmpty()) {
+          prop.setErrorMessage(Strings.join(message, ','));
+        }
+
+        result.setUploadProperty(prop);
+        return result;
+      }
+
+    };
+
+    try {
+      List<RoleAccessUploadModel> models = excelReader.parseWorkbook(file, uploadHeader, 2, 0);
+
+      for (RoleAccessUploadModel m : models) {
+        roleAccessUploadRepository.save(m);
+      }
+
+      // validate path and method
+      roleAccessUploadRepository.validateUploadAccessPathAndMethod(header.getId());
+    } catch (Exception e) {
+      log.error("Upload fail", e);
+    }
+
+    return uploadHeaderMapper.modelToDto(header);
+  }
+
+  @Override
+  public PageDto<RoleAccessUploadDto> pageUpload(PaginationDto pageRequest) {
+    Specification<RoleAccessUploadModel> specification = CommonImpl
+        .buildFilterSpecificationDto(pageRequest.getFilters(), RoleAccessUploadDto.class);
+    Pageable page = CommonImpl.buildPaginationPage(pageRequest, "id", RoleAccessUploadDto.class);
+    Page<RoleAccessUploadModel> pageModel = roleAccessUploadRepository.findAll(specification, page);
+
+    List<RoleAccessUploadDto> dto = pageModel.getContent().stream()
+        .map(uploadMapper::modelToDto).toList();
+
+    return new PageDto<>(pageModel, dto);
+
+  }
+
+  @Override
+  public RoleAccessUploadDto updateUpload(RoleAccessUploadDto uploadData) {
+
+    if (uploadData.getId() == null) {
+      throw new IllegalArgumentException("upload ID is required");
+    }
+
+    Optional<RoleAccessUploadModel> model = roleAccessUploadRepository.findById(uploadData.getId());
+    if (!model.isPresent()) {
+      throw new EntityNotFoundException();
+    }
+
+    RoleAccessUploadModel m = model.get();
+
+    List<SpecificationFilterWithJoin> filters = Arrays.asList(
+        new SpecificationFilterWithJoin(
+            "path",
+            uploadData.getPath(),
+            SpecificationEnum.EQ,
+            "AND"),
+        new SpecificationFilterWithJoin(
+            "method",
+            uploadData.getMethod(),
+            SpecificationEnum.EQ,
+            "AND"));
+
+    Specification<AccessModel> accessSpecification = new SpecificationBuilder<AccessModel>(filters)
+        .buildSpecification();
+
+    Optional<AccessModel> existingAccess = this.accessRepository.findOne(accessSpecification);
+    if (existingAccess.isPresent()) {
+      throw new IllegalArgumentException("Access already exists");
+    }
+
+    String[] roles = uploadData.getRoles().split(",");
+
+    if (roles.length > 0) {
+      List<RoleModel> exRole = roleRepository.findAll();
+      List<String> roleCode = exRole.stream().map(role -> role.getCode()).toList();
+
+      for (String r : roles) {
+        if (!roleCode.contains(r)) {
+          throw new IllegalArgumentException(String.format("Invalid role code %s", r));
+        }
+      }
+    }
+
+    m.setName(uploadData.getName());
+    m.setPath(uploadData.getPath());
+    m.setMethod(uploadData.getMethod());
+    m.setDescription(uploadData.getDescription());
+    m.setRoles(uploadData.getRoles());
+
+    UploadProperty prop = new UploadProperty();
+    prop.setErrorMessage(null);
+    prop.setUploadStatus(UploadStatusEnum.VALID);
+
+    m.setUploadProperty(prop);
+
+    m = roleAccessUploadRepository.save(m);
+
+    return uploadMapper.modelToDto(m);
+  }
+
+  @Override
+  public void deleteRoleAccessUpload(Integer uploadId) {
+    Optional<RoleAccessUploadModel> model = roleAccessUploadRepository.findById(uploadId);
+
+    if (!model.isPresent()) {
+      throw new EntityNotFoundException("upload data not found");
+    }
+
+    roleAccessUploadRepository.delete(model.get());
+  }
+
+  @Override
+  public void processUploadData(Integer uploadHeaderId) {
+
+    List<RoleAccessUploadModel> uploads = roleAccessUploadRepository
+        .findAll(RoleAccessSpecification.findUploadDataByHeaderId(uploadHeaderId));
+
+    List<RoleModel> roles = roleRepository.findAll();
+
+    for (RoleAccessUploadModel m : uploads) {
+      // create access
+      // each role create role access data
+      AccessModel access = new AccessModel();
+      access.setName(m.getName());
+      access.setPath(m.getPath());
+      access.setMethod(m.getMethod());
+      access.setDescription(m.getDescription());
+
+      access = accessRepository.save(access);
+
+      String[] roleCodes = m.getRoles().split(",");
+
+      for (String rCode : roleCodes) {
+        Optional<RoleModel> role = roles.stream().filter(f -> f.getCode().equals(rCode)).findFirst();
+
+        if (role.isPresent()) {
+          RoleAccessModel roleAccess = new RoleAccessModel();
+          roleAccess.setAccess(access);
+          roleAccess.setRole(role.get());
+
+          roleAccessRepository.save(roleAccess);
+        }
+      }
+
+      m.getUploadProperty().setUploadStatus(UploadStatusEnum.COMPLETED);
+
+      roleAccessUploadRepository.save(m);
+
+    }
   }
 
 }
