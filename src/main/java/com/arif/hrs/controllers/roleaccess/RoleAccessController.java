@@ -119,12 +119,27 @@ public class RoleAccessController {
     ByteArrayInputStream is = roleAccessService.generateUploadTemplate();
 
     HttpHeaders headers = new HttpHeaders();
+    headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
     headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=role-access-upload-template.xlsx");
 
     return ResponseEntity.ok()
         .headers(headers)
         .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
         .body(new InputStreamResource(is));
+  }
+
+  @PostMapping("/upload/list")
+  public ResponseEntity<ResponseModel<PageResponse<RoleAccessUpload>>> listUploadedRoleAccess(
+      @RequestBody PaginationRequest request) {
+    log.info("list uploaded role access");
+
+    PageDto<RoleAccessUploadDto> result = roleAccessService.pageUpload(new PaginationDto(request));
+
+    List<RoleAccessUpload> uploads = result.getData().stream()
+        .map(roleAccessUploadMapper::dtoToHttp).toList();
+    PageResponse<RoleAccessUpload> response = new PageResponse<>(result, uploads);
+
+    return ControllerUtil.createSuccessResponse(response, "success to fetch uploaded role access");
   }
 
   @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

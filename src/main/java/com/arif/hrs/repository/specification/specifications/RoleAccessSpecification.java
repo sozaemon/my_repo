@@ -29,7 +29,7 @@ public class RoleAccessSpecification {
 
       return builder
           .and(builder.equal(header.get("id"), headerId),
-              builder.equal(root.get("uploadProperty").get("uploadstatus"), UploadStatusEnum.VALID));
+              builder.equal(root.get("uploadProperty").get("uploadStatus"), UploadStatusEnum.VALID));
 
     };
   }

@@ -43,7 +43,6 @@ import com.arif.hrs.repository.RoleRepository;
 import com.arif.hrs.repository.UploadHeaderRepository;
 import com.arif.hrs.repository.specification.SpecificationBuilder;
 import com.arif.hrs.repository.specification.SpecificationEnum;
-import com.arif.hrs.repository.specification.SpecificationFilter;
 import com.arif.hrs.repository.specification.SpecificationFilterWithJoin;
 import com.arif.hrs.repository.specification.specifications.RoleAccessSpecification;
 import com.arif.hrs.service.serviceutility.CommonImpl;
@@ -214,11 +213,12 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
     header.setStatus(UploadHeaderStatusEnum.UPLOADED);
 
     final UploadHeaderModel savedHeader = uploadHeaderRepository.save(header);
+
     ExcelReader<RoleAccessUploadModel> excelReader = new ExcelReader<RoleAccessUploadModel>() {
       @Override
       protected RoleAccessUploadModel mapToResult(Map<String, Object> input) {
 
-        UploadStatusEnum status = UploadStatusEnum.UPLOADED;
+        UploadStatusEnum status = UploadStatusEnum.VALID;
         String[] sRole = String.valueOf(input.get("Roles")).split(",");
         List<String> message = new ArrayList<>();
 
@@ -263,7 +263,17 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
     try {
       List<RoleAccessUploadModel> models = excelReader.parseWorkbook(file, uploadHeader, 2, 0);
 
+      List<RoleAccessUploadModel> savedUploadData = new ArrayList<>();
       for (RoleAccessUploadModel m : models) {
+
+        boolean alreadyInserted = savedUploadData.stream()
+            .anyMatch(f -> (f.getPath().equals(m.getPath()) && f.getMethod().equals(m.getMethod()))
+                || f.getName().equals(m.getName()));
+
+        if (alreadyInserted) {
+          m.getUploadProperty().setUploadStatus(UploadStatusEnum.NOTVALID);
+          m.getUploadProperty().setErrorMessage("access data already exists in data set");
+        }
         roleAccessUploadRepository.save(m);
       }
 
@@ -393,6 +403,18 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
   @Override
   public void processUploadData(Integer uploadHeaderId) {
 
+    Optional<UploadHeaderModel> header = uploadHeaderRepository.findById(uploadHeaderId);
+
+    if (header.isEmpty()) {
+      throw new EntityNotFoundException("invalid header id");
+    }
+
+    UploadHeaderModel headerModel = header.get();
+
+    if (headerModel.getStatus().equals(UploadHeaderStatusEnum.COMPLETE)) {
+      throw new IllegalArgumentException("Header already processed and complete");
+    }
+
     List<RoleAccessUploadModel> uploads = roleAccessUploadRepository
         .findAll(RoleAccessSpecification.findUploadDataByHeaderId(uploadHeaderId));
 
@@ -424,10 +446,11 @@ public class RoleAccessServiceImpl implements RoleAccessServiceDomain {
       }
 
       m.getUploadProperty().setUploadStatus(UploadStatusEnum.COMPLETED);
-
       roleAccessUploadRepository.save(m);
 
     }
+    headerModel.setStatus(UploadHeaderStatusEnum.COMPLETE);
+    uploadHeaderRepository.save(headerModel);
   }
 
 }
