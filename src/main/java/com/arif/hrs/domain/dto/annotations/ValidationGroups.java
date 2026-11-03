@@ -7,4 +7,10 @@ public interface ValidationGroups {
 
   interface Update {
   }
+
+  interface Login {
+  }
+
+  interface LoginWithRole{
+  }
 }

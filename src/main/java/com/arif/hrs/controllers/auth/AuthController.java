@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,7 @@ import com.arif.hrs.controllers.httpmodel.Role;
 import com.arif.hrs.controllers.httpmodel.TokenResponse;
 import com.arif.hrs.domain.dto.RoleDto;
 import com.arif.hrs.domain.dto.UserDto;
+import com.arif.hrs.domain.dto.annotations.ValidationGroups;
 import com.arif.hrs.domain.service.RoleServiceDomain;
 import com.arif.hrs.domain.service.UserAuthServiceDomain;
 import com.arif.hrs.mapper.RoleMapper;
@@ -46,7 +48,7 @@ public class AuthController {
   private final UserAuthServiceDomain userAuthService;
   private final AuthJwtService jwtService;
   private final CookieComponent cookieComponent;
- 
+
 
   private final RoleMapper roleMapper;
 
@@ -64,7 +66,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<ResponseModel<?>> createJwtToken(@Valid @RequestBody LoginRequest request,
+  public ResponseEntity<ResponseModel<?>> createJwtToken(@Validated(ValidationGroups.LoginWithRole.class) @RequestBody LoginRequest request,
       HttpServletResponse response) {
 
     log.info("AuthController {}", "create jwt token");
@@ -169,7 +171,7 @@ public class AuthController {
   }
 
   @PostMapping("/user-roles")
-  public ResponseEntity<ResponseModel<?>> authenticateLoginAndFetchRole(@Valid @RequestBody LoginRequest request) {
+  public ResponseEntity<ResponseModel<?>> authenticateLoginAndFetchRole(@Validated(ValidationGroups.Login.class) @RequestBody LoginRequest request) {
     log.info("Auth Controller {}:{}", "POST", "fetch User Roles");
     boolean isAuthenticated = authenticateLogin(request);
 
