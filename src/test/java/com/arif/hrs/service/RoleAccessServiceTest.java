@@ -195,7 +195,7 @@ public class RoleAccessServiceTest {
     Pageable pageable = pageableCaptor.getValue();
     assertEquals(1, pageable.getPageNumber());
     assertEquals(5, pageable.getPageSize());
-    assertEquals("accessName", pageable.getSort().getOrderFor("accessName").getProperty());
+    assertEquals("access.name", pageable.getSort().getOrderFor("access.name").getProperty());
   }
 
   @Test

@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.arif.hrs.domain.dto.FilterDto;
@@ -85,6 +87,19 @@ public class ShiftRepositoryTest {
 
     assertNotNull(result);
     assertEquals(3, result.size());
+  }
+
+  @Test
+  void filterShiftWithPaginationDoesNotFetchJoinInCountQuery() {
+    List<FilterDto> filterDTOs = Arrays.asList(new FilterDto[] {
+        filterDto("shiftTypeName", "Night", new ArrayList<>(), "EQ", "AND")
+    });
+
+    Specification<ShiftModel> specification = CommonImpl.buildFilterSpecificationDto(filterDTOs, ShiftDto.class);
+    Page<ShiftModel> result = shiftRepository.findAll(specification, PageRequest.of(0, 1));
+
+    assertEquals(2, result.getTotalElements());
+    assertEquals(1, result.getContent().size());
   }
 
   private static ShiftTypeModel shiftTypeModel(String code, String name) {

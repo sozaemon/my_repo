@@ -4,11 +4,13 @@ import com.arif.hrs.model.enums.AccessMethodEnum;
 import com.arif.hrs.model.enums.UploadStatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class RoleAccessUpload {
   @JsonProperty("id")
+  @NotNull(message = "id is required")
   private Integer id;
   @JsonProperty("name")
   private String name;

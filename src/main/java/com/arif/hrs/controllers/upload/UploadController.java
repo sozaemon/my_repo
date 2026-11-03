@@ -19,6 +19,7 @@ import com.arif.hrs.domain.dto.UploadHeaderDto;
 import com.arif.hrs.domain.service.UploadHeaderServiceDomain;
 import com.arif.hrs.mapper.UploadHeaderMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -36,7 +37,7 @@ public class UploadController {
 
   @PostMapping("/list")
   public ResponseEntity<ResponseModel<PageResponse<UploadHeader>>> list(
-      @RequestBody PaginationRequest request) {
+      @Valid @RequestBody PaginationRequest request) {
     PageDto<UploadHeaderDto> result = uploadHeaderService.paginate(new PaginationDto(request));
     List<UploadHeader> uploadHeader = result.getData().stream().map(mapper::dtoToHttp).toList();
     PageResponse<UploadHeader> response = new PageResponse<>(result, uploadHeader);

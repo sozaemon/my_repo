@@ -7,8 +7,11 @@ import com.arif.hrs.repository.specification.SpecificationFilter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class FilterRequest {
   @JsonProperty("fieldName")
+  @NotBlank(message = "fieldName is required")
   private String fieldName;
 
   @JsonProperty("value")

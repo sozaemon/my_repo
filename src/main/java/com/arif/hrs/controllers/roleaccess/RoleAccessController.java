@@ -36,6 +36,7 @@ import com.arif.hrs.mapper.RoleAccessMapper;
 import com.arif.hrs.mapper.RoleAccessUploadMapper;
 import com.arif.hrs.mapper.UploadHeaderMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -61,7 +62,7 @@ public class RoleAccessController {
 
   @PostMapping("/list")
   public ResponseEntity<ResponseModel<PageResponse<RoleAccess>>> listRoleAccess(
-      @RequestBody PaginationRequest request) {
+      @Valid @RequestBody PaginationRequest request) {
     log.info("list role access");
 
     PageDto<RoleAccessDto> result = roleAccessService.paginate(new PaginationDto(request));
@@ -86,7 +87,7 @@ public class RoleAccessController {
 
   @PostMapping("/create")
   public ResponseEntity<ResponseModel<RoleAccess>> createRoleAccess(
-      @RequestBody RoleAccess request) {
+      @Valid @RequestBody RoleAccess request) {
     log.info("create role access");
 
     RoleAccessDto dto = roleAccessService.create(mapper.httpToDto(request));
@@ -103,7 +104,8 @@ public class RoleAccessController {
   }
 
   @PostMapping("/assign-roles")
-  public ResponseEntity<ResponseModel<List<RoleAccess>>> assignRoles(@RequestBody AssignRoleAccessRequest request) {
+  public ResponseEntity<ResponseModel<List<RoleAccess>>> assignRoles(
+      @Valid @RequestBody AssignRoleAccessRequest request) {
     log.info("assign roles {} to access {}", request.getRoleIds(), request.getAccessId());
 
     List<RoleAccessDto> roleAccess = roleAccessService.assignRolesToAccess(request.getRoleIds(), request.getAccessId());
@@ -130,7 +132,7 @@ public class RoleAccessController {
 
   @PostMapping("/upload/list")
   public ResponseEntity<ResponseModel<PageResponse<RoleAccessUpload>>> listUploadedRoleAccess(
-      @RequestBody PaginationRequest request) {
+      @Valid @RequestBody PaginationRequest request) {
     log.info("list uploaded role access");
 
     PageDto<RoleAccessUploadDto> result = roleAccessService.pageUpload(new PaginationDto(request));
@@ -152,7 +154,8 @@ public class RoleAccessController {
   }
 
   @PatchMapping(value = "/upload/update")
-  public ResponseEntity<ResponseModel<RoleAccessUpload>> updateUploadData(@RequestBody RoleAccessUpload uploadData) {
+  public ResponseEntity<ResponseModel<RoleAccessUpload>> updateUploadData(
+      @Valid @RequestBody RoleAccessUpload uploadData) {
     RoleAccessUploadDto dto = roleAccessService.updateUpload(roleAccessUploadMapper.httpToDto(uploadData));
 
     return ControllerUtil.createSuccessResponse(roleAccessUploadMapper.dtoToHttp(dto), "success update upload data");

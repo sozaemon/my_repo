@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,9 +21,11 @@ import com.arif.hrs.controllers.httpmodel.Shift;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.ShiftDto;
+import com.arif.hrs.domain.dto.annotations.ValidationGroups;
 import com.arif.hrs.domain.service.ShiftServiceDomain;
 import com.arif.hrs.mapper.ShiftMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,7 +44,7 @@ public class ShiftController {
 
   @PostMapping("/list")
   public ResponseEntity<ResponseModel<?>> listShift(
-      @RequestBody PaginationRequest request) {
+      @Valid @RequestBody PaginationRequest request) {
 
     log.info("list shift");
 
@@ -56,7 +59,7 @@ public class ShiftController {
 
   @PostMapping("/create")
   public ResponseEntity<ResponseModel<Shift>> createShift(
-      @RequestBody Shift request) {
+      @Validated(ValidationGroups.Create.class) @RequestBody Shift request) {
     log.info("Create Shift");
 
     ShiftDto result = shiftService.create(mapper.httpToDto(request));
@@ -65,7 +68,7 @@ public class ShiftController {
 
   @PutMapping("/update")
   public ResponseEntity<ResponseModel<Shift>> updateShift(
-      @RequestBody Shift request) {
+      @Validated(ValidationGroups.Update.class) @RequestBody Shift request) {
     log.info("Update Shift");
 
     ShiftDto result = shiftService.update(mapper.httpToDto(request));

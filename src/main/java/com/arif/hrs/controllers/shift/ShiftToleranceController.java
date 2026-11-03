@@ -3,6 +3,7 @@ package com.arif.hrs.controllers.shift;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,9 +17,11 @@ import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.ShiftToleranceDto;
+import com.arif.hrs.domain.dto.annotations.ValidationGroups;
 import com.arif.hrs.domain.service.ShiftToleranceServiceDomain;
 import com.arif.hrs.mapper.ShiftToleranceMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -36,7 +39,8 @@ public class ShiftToleranceController {
   }
 
   @PostMapping("/create")
-  public ResponseEntity<ResponseModel<ShiftTolerance>> createShiftTolerance(@RequestBody ShiftTolerance request) {
+  public ResponseEntity<ResponseModel<ShiftTolerance>> createShiftTolerance(
+      @Validated(ValidationGroups.Create.class) @RequestBody ShiftTolerance request) {
     log.info("create shift tolerance");
 
     ShiftToleranceDto dto = shiftToleranceService.create(mapper.httpToDto(request));
@@ -45,7 +49,8 @@ public class ShiftToleranceController {
   }
 
   @PostMapping("/update")
-  public ResponseEntity<ResponseModel<ShiftTolerance>> updateShiftTolerance(@RequestBody ShiftTolerance request) {
+  public ResponseEntity<ResponseModel<ShiftTolerance>> updateShiftTolerance(
+      @Validated(ValidationGroups.Update.class) @RequestBody ShiftTolerance request) {
     log.info("update shift tolerance");
 
     ShiftToleranceDto dto = shiftToleranceService.update(mapper.httpToDto(request));
@@ -53,7 +58,8 @@ public class ShiftToleranceController {
   }
 
   @PostMapping("/list")
-  public ResponseEntity<ResponseModel<?>> listShiftTolerance(@RequestBody PaginationRequest request) {
+  public ResponseEntity<ResponseModel<?>> listShiftTolerance(
+      @Valid @RequestBody PaginationRequest request) {
     log.info("list shift tolerance");
 
     PageDto<ShiftToleranceDto> result = shiftToleranceService.paginate(new PaginationDto(request));

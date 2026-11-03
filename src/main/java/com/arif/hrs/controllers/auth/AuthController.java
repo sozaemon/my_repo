@@ -34,6 +34,7 @@ import com.arif.hrs.mapper.RoleMapper;
 import com.arif.hrs.util.cookie.CookieComponent;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -63,7 +64,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<ResponseModel<?>> createJwtToken(@RequestBody LoginRequest request,
+  public ResponseEntity<ResponseModel<?>> createJwtToken(@Valid @RequestBody LoginRequest request,
       HttpServletResponse response) {
 
     log.info("AuthController {}", "create jwt token");
@@ -168,7 +169,7 @@ public class AuthController {
   }
 
   @PostMapping("/user-roles")
-  public ResponseEntity<ResponseModel<?>> authenticateLoginAndFetchRole(@RequestBody LoginRequest request) {
+  public ResponseEntity<ResponseModel<?>> authenticateLoginAndFetchRole(@Valid @RequestBody LoginRequest request) {
     log.info("Auth Controller {}:{}", "POST", "fetch User Roles");
     boolean isAuthenticated = authenticateLogin(request);
 

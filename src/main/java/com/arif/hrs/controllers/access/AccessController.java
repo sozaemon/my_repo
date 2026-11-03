@@ -7,6 +7,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,9 +24,11 @@ import com.arif.hrs.controllers.httpmodel.PaginationRequest;
 import com.arif.hrs.domain.dto.AccessDto;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
+import com.arif.hrs.domain.dto.annotations.ValidationGroups;
 import com.arif.hrs.domain.service.AccessServiceDomain;
 import com.arif.hrs.mapper.AccessMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -42,7 +45,7 @@ public class AccessController {
   }
 
   @PostMapping("/list")
-  public ResponseEntity<ResponseModel<?>> listAccess(@RequestBody PaginationRequest request) {
+  public ResponseEntity<ResponseModel<?>> listAccess(@Valid @RequestBody PaginationRequest request) {
     log.info("list access");
 
     PageDto<AccessDto> result = accessService.paginate(new PaginationDto(request));
@@ -70,7 +73,8 @@ public class AccessController {
   }
 
   @PostMapping("/create")
-  public ResponseEntity<ResponseModel<Access>> createAccess(@RequestBody Access request) {
+  public ResponseEntity<ResponseModel<Access>> createAccess(
+      @Validated(ValidationGroups.Create.class) @RequestBody Access request) {
     log.info("create access");
 
     AccessDto resultDto = accessService.create(mapper.httpToDto(request));
@@ -78,7 +82,8 @@ public class AccessController {
   }
 
   @PutMapping("/update")
-  public ResponseEntity<ResponseModel<Access>> updateAccess(@RequestBody Access request) {
+  public ResponseEntity<ResponseModel<Access>> updateAccess(
+      @Validated(ValidationGroups.Update.class) @RequestBody Access request) {
     log.info("update access");
 
     AccessDto resultDto = accessService.update(mapper.httpToDto(request));

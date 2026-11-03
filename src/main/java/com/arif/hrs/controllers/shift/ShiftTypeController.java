@@ -3,6 +3,7 @@ package com.arif.hrs.controllers.shift;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,9 +20,11 @@ import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.ShiftTypeDto;
+import com.arif.hrs.domain.dto.annotations.ValidationGroups;
 import com.arif.hrs.domain.service.ShiftTypeServiceDomain;
 import com.arif.hrs.mapper.ShiftTypeMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -38,7 +41,8 @@ public class ShiftTypeController {
   }
 
   @PostMapping("/create")
-  public ResponseEntity<ResponseModel<ShiftType>> createShiftType(@RequestBody ShiftType shiftType) {
+  public ResponseEntity<ResponseModel<ShiftType>> createShiftType(
+      @Validated(ValidationGroups.Create.class) @RequestBody ShiftType shiftType) {
     log.info("create shift type");
 
     ShiftTypeDto dto = shiftTypeService.create(mapper.httpToDto(shiftType));
@@ -47,7 +51,8 @@ public class ShiftTypeController {
   }
 
   @PostMapping("/list")
-  public ResponseEntity<ResponseModel<PageResponse<?>>> listShiftType(@RequestBody PaginationRequest request) {
+  public ResponseEntity<ResponseModel<PageResponse<?>>> listShiftType(
+      @Valid @RequestBody PaginationRequest request) {
     log.info("list shift type");
 
     PageDto<ShiftTypeDto> result = shiftTypeService.paginate(new PaginationDto(request));
@@ -59,7 +64,8 @@ public class ShiftTypeController {
   }
 
   @PutMapping("/update")
-  public ResponseEntity<ResponseModel<ShiftType>> updateShiftType(@RequestBody ShiftType request) {
+  public ResponseEntity<ResponseModel<ShiftType>> updateShiftType(
+      @Validated(ValidationGroups.Update.class) @RequestBody ShiftType request) {
     log.info("update shift type");
 
     ShiftTypeDto result = shiftTypeService.update(mapper.httpToDto(request));

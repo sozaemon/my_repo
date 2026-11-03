@@ -125,7 +125,7 @@ class AccessServiceTest {
 
     assertEquals(updatedDto, result);
     assertEquals("Updated name", existing.getName());
-    assertEquals("POST", existing.getMethod());
+    assertEquals(AccessMethodEnum.POST, existing.getMethod());
     assertEquals("Updated description", existing.getDescription());
     verify(accessRepository).save(existing);
     verify(mapper).modelToDto(existing);

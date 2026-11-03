@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +22,11 @@ import com.arif.hrs.controllers.util.ControllerUtil;
 import com.arif.hrs.domain.dto.PageDto;
 import com.arif.hrs.domain.dto.PaginationDto;
 import com.arif.hrs.domain.dto.RoleDto;
+import com.arif.hrs.domain.dto.annotations.ValidationGroups;
 import com.arif.hrs.domain.service.RoleServiceDomain;
 import com.arif.hrs.mapper.RoleMapper;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/role")
@@ -40,7 +44,7 @@ public class RoleController {
 
   @PostMapping("/list")
   public ResponseEntity<ResponseModel<PageResponse<Role>>> listRole(
-      @RequestBody PaginationRequest request) {
+      @Valid @RequestBody PaginationRequest request) {
     log.info("list role");
 
     PageDto<RoleDto> result = roleService.paginate(new PaginationDto(request));
@@ -52,7 +56,8 @@ public class RoleController {
   }
 
   @PostMapping("/create")
-  public ResponseEntity<ResponseModel<Role>> createRole(@RequestBody Role role) {
+  public ResponseEntity<ResponseModel<Role>> createRole(
+      @Validated(ValidationGroups.Create.class) @RequestBody Role role) {
     log.info("create role");
 
     RoleDto dtoResult = roleService.create(mapper.httpToDto(role));
@@ -61,7 +66,8 @@ public class RoleController {
   }
 
   @PutMapping("/update")
-  public ResponseEntity<ResponseModel<Role>> updateRole(@RequestBody Role role) {
+  public ResponseEntity<ResponseModel<Role>> updateRole(
+      @Validated(ValidationGroups.Update.class) @RequestBody Role role) {
     log.info("update role");
 
     RoleDto dtoResult = roleService.update(mapper.httpToDto(role));

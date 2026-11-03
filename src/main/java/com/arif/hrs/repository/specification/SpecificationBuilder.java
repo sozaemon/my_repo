@@ -96,12 +96,16 @@ public class SpecificationBuilder<T> {
     return (root, query, builder) -> {
       query.distinct(true);
 
-      List<String> alreadyJoinedTable = new ArrayList<>();
+      boolean isCountQuery = query.getResultType() == Long.class || query.getResultType() == long.class;
 
-      for (FieldJoinMapping m : this.joinMapping) {
-        if (!alreadyJoinedTable.contains(m.joinTable())) {
-          root.fetch(m.joinTable(), JoinType.valueOf(m.joinType()));
-          alreadyJoinedTable.add(m.joinTable());
+      if (!isCountQuery) {
+        List<String> alreadyJoinedTable = new ArrayList<>();
+
+        for (FieldJoinMapping m : this.joinMapping) {
+          if (!alreadyJoinedTable.contains(m.joinTable())) {
+            root.fetch(m.joinTable(), JoinType.valueOf(m.joinType()));
+            alreadyJoinedTable.add(m.joinTable());
+          }
         }
       }
 

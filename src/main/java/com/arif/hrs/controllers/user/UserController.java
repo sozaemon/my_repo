@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.arif.hrs.auth.model.AuthUser;
 import com.arif.hrs.controllers.ResponseModel;
+import com.arif.hrs.controllers.httpmodel.AssignUserRole;
 import com.arif.hrs.controllers.httpmodel.FUser;
 import com.arif.hrs.controllers.httpmodel.PageResponse;
 import com.arif.hrs.controllers.httpmodel.PaginationRequest;
+import com.arif.hrs.controllers.httpmodel.Role;
 import com.arif.hrs.controllers.httpmodel.UpdatePassword;
 import com.arif.hrs.controllers.httpmodel.User;
 import com.arif.hrs.controllers.util.ControllerUtil;
@@ -32,8 +34,11 @@ import com.arif.hrs.domain.dto.UserDto;
 import com.arif.hrs.domain.service.RoleServiceDomain;
 import com.arif.hrs.domain.service.UserAuthServiceDomain;
 import com.arif.hrs.domain.service.UserServiceDomain;
+import com.arif.hrs.mapper.AssignUserRoleMapper;
+import com.arif.hrs.mapper.RoleMapper;
 import com.arif.hrs.mapper.UserMapper;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -44,14 +49,19 @@ public class UserController {
   private final UserAuthServiceDomain userAuthService;
   private final UserServiceDomain userService;
   private final UserMapper mapper;
-   private final RoleServiceDomain roleService;
+  private final RoleServiceDomain roleService;
+  private final RoleMapper roleMapper;
+  private final AssignUserRoleMapper assignUserRoleMapper;
 
   public UserController(UserAuthServiceDomain userAuthServiceDomain, UserServiceDomain userServiceDomain,
-      UserMapper mapper, RoleServiceDomain roleService) {
+      UserMapper mapper, RoleServiceDomain roleService, RoleMapper roleMapper,
+      AssignUserRoleMapper assignUserRoleMapper) {
     this.userAuthService = userAuthServiceDomain;
     this.userService = userServiceDomain;
     this.mapper = mapper;
-    this.roleService =roleService;
+    this.roleService = roleService;
+    this.roleMapper = roleMapper;
+    this.assignUserRoleMapper = assignUserRoleMapper;
   }
 
   @GetMapping("")
@@ -70,7 +80,7 @@ public class UserController {
   }
 
   @PostMapping("/list")
-  public ResponseEntity<ResponseModel<PageResponse<?>>> listUser(@RequestBody PaginationRequest request) {
+  public ResponseEntity<ResponseModel<PageResponse<?>>> listUser(@Valid @RequestBody PaginationRequest request) {
     PageDto<UserDto> result = userService.paginate(new PaginationDto(request));
 
     List<User> user = result.getData().stream().map(mapper::dtoToHttp).toList();
@@ -80,7 +90,7 @@ public class UserController {
   }
 
   @PostMapping("/create")
-  public ResponseEntity<ResponseModel<User>> createUser(@RequestBody FUser request) {
+  public ResponseEntity<ResponseModel<User>> createUser(@Valid @RequestBody FUser request) {
     FUserDto dto = new FUserDto();
     dto.setUserName(request.getUserName());
     dto.setEmail(request.getEmail());
@@ -93,7 +103,7 @@ public class UserController {
   }
 
   @PutMapping("/update")
-  public ResponseEntity<ResponseModel<User>> updateUser(@RequestBody User request) {
+  public ResponseEntity<ResponseModel<User>> updateUser(@Valid @RequestBody User request) {
     UserDto result = userService.update(mapper.httpToDto(request));
 
     return ControllerUtil.createSuccessResponse(mapper.dtoToHttp(result), "Success update User");
@@ -109,7 +119,7 @@ public class UserController {
   @PatchMapping("/update-password")
   public ResponseEntity<ResponseModel<User>> updatePassword(
     @AuthenticationPrincipal AuthUser user,
-    @RequestBody UpdatePassword request) {
+    @Valid @RequestBody UpdatePassword request) {
 
     log.info("Auth Controller {}:{}", "POST", "Update password");
     String username = user.getUsername();
@@ -133,6 +143,27 @@ public class UserController {
       }
     }
     return ResponseEntity.ok(new ResponseModel<String>(result, "success to fetch user roles"));
+  }
+
+  @GetMapping("/user-roles/{userId}")
+  public ResponseEntity<ResponseModel<List<Role>>> getUserRolesByUserId(
+      @PathVariable("userId") Integer userId) {
+    log.info("User Controller {}:{}", "GET", "fetch User Roles by user id");
+
+    List<Role> result = userService.getRolesByUserId(userId).stream()
+        .map(roleMapper::dtoToHttp)
+        .toList();
+
+    return ControllerUtil.createSuccessResponse(result, "success to fetch user roles");
+  }
+
+  @PostMapping("/assign-role")
+  public ResponseEntity<ResponseModel<String>> assignUserRole(@Valid @RequestBody AssignUserRole request) {
+    log.info("User Controller {}:{}", "POST", "assign user role");
+
+    userService.assignUserRole(assignUserRoleMapper.httpToDto(request));
+
+    return ControllerUtil.createSuccessResponse("Success", "Success to assign user role");
   }
 
 }
