@@ -11,4 +11,5 @@
     <include file="changes/202610021428_table_created_update.xml" relativeToChangelogFile="true"/>
     <include file="changes/202610201053_role_access_upload.xml" relativeToChangelogFile="true"/>
     <include file="changes/202610201401_upload_header.xml" relativeToChangelogFile="true"/>
+    <include file="changes/202610031657_permission.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

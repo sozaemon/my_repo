@@ -1,0 +1,45 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+  <changeSet author="arif" id="202610031657-1">
+    <createTable tableName="sys_permission">
+      <column autoIncrement="true" name="id" startWith="1" type="INTEGER">
+        <constraints nullable="false" primaryKey="true"
+          primaryKeyName="sys_permission_pk"/>
+      </column>
+      <column name="role_code" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="permission" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created" type="TIMESTAMP WITHOUT TIME ZONE">
+        <constraints nullable="false"/>
+      </column>
+      <column name="updated" type="TIMESTAMP WITHOUT TIME ZONE">
+        <constraints nullable="false"/>
+      </column>
+      <column name="createdby" type="VARCHAR(150)"/>
+      <column name="updatedby" type="VARCHAR(150)"/>
+      <column name="uuid" type="UUID">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+  <changeSet author="arif" id="202610031657-2">
+    <createIndex indexName="uq_sys_permission_uuid" tableName="sys_permission" unique="true">
+      <column name="uuid"/>
+    </createIndex>
+  </changeSet>
+  <changeSet author="arif" id="202610031657-3">
+    <createIndex indexName="uq_sys_permission_role_code_permission" tableName="sys_permission" unique="true">
+      <column name="role_code"/>
+      <column name="permission"/>
+    </createIndex>
+  </changeSet>
+</databaseChangeLog>
