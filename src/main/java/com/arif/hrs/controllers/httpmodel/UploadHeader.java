@@ -1,5 +1,7 @@
 package com.arif.hrs.controllers.httpmodel;
 
+import java.sql.Timestamp;
+
 import com.arif.hrs.model.enums.UploadHeaderStatusEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -16,4 +18,8 @@ public class UploadHeader {
   private UploadHeaderStatusEnum status;
   @JsonProperty("description")
   private String description;
+  @JsonProperty("created")
+  private Timestamp created;
+  @JsonProperty("updated")
+  private Timestamp updated;
 }
